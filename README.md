@@ -20,24 +20,49 @@ Uma plataforma SaaS de captação de leads feita em Ruby on Rails que usa um mod
 ```
 capta_lead/
 ├── app/
+│   ├── controllers/
+│   │   ├── application_controller.rb
+│   │   ├── companies_controller.rb      # CRUD empresas + critérios IA
+│   │   ├── dashboard_controller.rb      # métricas, calibração, status Ollama
+│   │   ├── lead_qualifications_controller.rb  # listagem e detalhe qualificações
+│   │   └── leads_controller.rb          # CRUD leads + formulário dinâmico + qualificar
+│   ├── helpers/
+│   │   └── application_helper.rb        # lead_answer, criteria_value, preview_criteria
+│   ├── javascript/
+│   │   └── controllers/
+│   │       └── lead_form_controller.js  # campos dinâmicos, modo Visual/JSON
 │   ├── models/
-│   │   ├── company.rb            # Flipper::Identifier, DEFAULT_CRITERIA (BANT)
-│   │   ├── lead.rb               # belongs_to company, has_one lead_qualification
-│   │   └── lead_qualification.rb # enum status, snapshots jsonb
+│   │   ├── application_record.rb
+│   │   ├── company.rb                   # Flipper::Identifier, DEFAULT_CRITERIA (BANT), validação JSON
+│   │   ├── lead.rb                      # validação form_fields, campos pessoais vs negócio
+│   │   └── lead_qualification.rb        # enum status, snapshots jsonb
 │   ├── services/qualification/
-│   │   ├── answer_sanitizer.rb   # filtro de dados pessoais (tipos + regex)
-│   │   ├── ollama_client.rb      # cliente /v1/systemone, TransientError/InvalidResponse
-│   │   ├── interpreter.rb        # nota → status + confiança
-│   │   ├── evaluator.rb          # orquestra filtro → modelo → interpretação → upsert
-│   │   ├── enqueuer.rb           # feature flag, idempotência, enfileira job
-│   │   └── metrics.rb            # matriz de confusão, precisão, recall, brier, calibração
+│   │   ├── answer_sanitizer.rb          # filtro de dados pessoais (tipos + regex)
+│   │   ├── enqueuer.rb                  # feature flag, idempotência, enfileira job
+│   │   ├── evaluator.rb                 # orquestra filtro → modelo → interpretação → upsert
+│   │   ├── interpreter.rb               # nota → status + confiança
+│   │   ├── metrics.rb                   # matriz de confusão, precisão, recall, brier, calibração
+│   │   └── ollama_client.rb             # cliente /v1/systemone, TransientError/InvalidResponse
+│   ├── validators/
+│   │   └── jsonb_schema_validator.rb    # valida critérios JSON (chaves obrigatórias, threshold 0-1)
+│   ├── views/
+│   │   ├── companies/                   # index, new, edit, show, _criteria
+│   │   ├── dashboard/                   # index (cards, métricas, calibração, Ollama)
+│   │   ├── leads/                       # index, new, edit, show, _form_fields, _form_fields_field
+│   │   ├── lead_qualifications/         # index, show
+│   │   └── layouts/
+│   │       └── application.html.erb     # layout com navbar, hero, footer
 │   └── sidekiq/
-│       └── qualify_lead_job.rb   # fila low, retry 3, sidekiq_retries_exhausted
+│       └── qualify_lead_job.rb          # fila low, retry 3, sidekiq_retries_exhausted
+├── assets/
+│   └── stylesheets/
+│       └── capta_lead.css               # design system profissional (cores, cards, badges)
 ├── db/migrate/
 │   ├── 20261110000000_create_companies.rb
 │   ├── 20261110000001_create_leads.rb
 │   ├── 20261110000002_create_lead_qualifications.rb
-│   └── 20261110000003_add_qualification_criteria_to_companies.rb
+│   ├── 20261110000003_add_qualification_criteria_to_companies.rb
+│   └── 20261110143334_create_flipper_tables.rb
 ├── spec/
 │   ├── factories/
 │   ├── services/qualification/
@@ -49,13 +74,16 @@ capta_lead/
 │   │   └── metrics_spec.rb
 │   ├── spec_helper.rb
 │   └── rails_helper.rb
-├── lib/tasks/qualification.rake  # rake qualification:metrics
+├── lib/tasks/qualification.rake         # rake qualification:metrics
 ├── config/
-│   ├── initializers/flipper.rb   # feature flag com ActiveRecord
-│   └── initializers/sidekiq.rb   # conexão Redis
+│   ├── initializers/flipper.rb          # feature flag com ActiveRecord
+│   └── initializers/sidekiq.rb          # conexão Redis
 ├── Dockerfile
-├── docker-compose.yml            # postgres, redis, web, sidekiq (Ollama é local)
-├── bin/ollama_check              # valida Ollama local e modelo Tev1
+├── docker-compose.yml                   # postgres, redis, web, sidekiq (Ollama é local)
+├── bin/
+│   └── ollama_check                     # valida Ollama local e modelo Tev1
+├── public/javascripts/
+│   └── lead_form_controller.js          # JS de campos dinâmicos (cópia para uso direto)
 ├── .env.example
 ├── Gemfile
 └── README.md
@@ -220,6 +248,19 @@ Exemplo de JSON gerado:
   { "label": "Conte sua necessidade", "type": "textarea", "value": "Preciso de contabilidade." }
 ]
 ```
+
+## Acesso à aplicação
+
+Após iniciar o servidor (`bundle exec rails server`), acesse **http://localhost:3000/**:
+
+| Página | URL | Função |
+|--------|-----|--------|
+| **Dashboard** | `/dashboard` | Visão geral: cards de estatísticas, barras de progresso, métricas de desempenho, calibração, status do Ollama |
+| **Empresas** | `/companies` | CRUD completo: criar, editar, excluir empresas e gerenciar critérios de qualificação IA |
+| **Nova Empresa** | `/companies/new` | Formulário com nome, modo demo e critérios (instruções, qualificado, não qualificado, limiar) |
+| **Leads** | `/leads` | Listagem com status da qualificação e score; botão "Qualificar" para enfileirar job Sidekiq |
+| **Novo Lead** | `/leads/new` | Formulário com seleção de empresa, modo demo e campos dinâmicos do formulário de captação |
+| **Qualificações** | `/lead_qualifications` | Lista completa de todas as avaliações IA com status, score, confiança e modelo |
 
 ## Principais decisões de projeto
 
