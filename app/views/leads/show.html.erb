@@ -147,11 +147,9 @@
           <i class="bi bi-exclamation-triangle me-2"></i>
           <strong>Erro:</strong> <%= @lead.lead_qualification.error_message %>
         </div>
-        <% if @lead.lead_qualification.status_unclassified? || @lead.lead_qualification.status_failed? %>
-          <%= link_to requalify_lead_path(@lead), method: :post, class: "btn btn-sm btn-outline-warning mt-2", data: { confirm: "Deseja reprocessar a qualificação deste lead?" } do %>
-            <i class="bi bi-arrow-repeat me-1"></i> Reprocessar
-          <% end %>
-        <% end %>
+      <% end %>
+      <%= link_to requalify_lead_path(@lead), method: :post, class: "btn btn-sm btn-outline-warning mt-2", data: { confirm: "Deseja reprocessar a qualificação deste lead?" } do %>
+        <i class="bi bi-arrow-repeat me-1"></i> Reprocessar
       <% end %>
     </div>
   </div>

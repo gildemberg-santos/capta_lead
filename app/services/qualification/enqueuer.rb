@@ -16,14 +16,14 @@ module Qualification
     end
   end
 
-  # Reprocessa uma qualificacao que falhou (unclassified ou failed).
+  # Reprocessa qualquer qualificacao existente.
   # Volta o status para pending e re-enfileira o job.
   def self.reprocess!(lead)
     return if lead.demo?
     return unless Flipper.enabled?(:lead_qualification, lead.company)
 
     qualification = LeadQualification.find_by(lead_id: lead.id)
-    return nil unless qualification&.status_unclassified? || qualification&.status_failed?
+    return nil unless qualification
 
     qualification.update!(status: "pending", error_message: nil)
     QualifyLeadJob.perform_async(lead.id)
