@@ -1,0 +1,64 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: capta_lead_development
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    depends_on:
+      db:
+        condition: service_started
+      redis:
+        condition: service_started
+    environment:
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      REDIS_URL: redis://redis:6379/0
+      # Aponta para o Ollama rodando no HOST (não em container).
+      # Se você já tem Ollama local em localhost:11434, isso funciona direto.
+      OLLAMA_URL: http://host.docker.internal:11434
+      QUALIFICATION_MODEL: tev1:4b
+      RAILS_MAX_THREADS: 5
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+    stdin_open: true
+    tty: true
+
+  sidekiq:
+    build: .
+    depends_on:
+      db:
+        condition: service_started
+      redis:
+        condition: service_started
+    environment:
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      REDIS_URL: redis://redis:6379/0
+      # Aponta para o Ollama rodando no HOST (não em container).
+      OLLAMA_URL: http://host.docker.internal:11434
+      QUALIFICATION_MODEL: tev1:4b
+    volumes:
+      - .:/app
+    command: bundle exec sidekiq -q low -q default
+
+volumes:
+  postgres_data:

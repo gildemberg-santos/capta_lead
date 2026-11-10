@@ -1,0 +1,61 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2><i class="bi bi-search me-2 text-primary"></i>Qualificações de Leads</h2>
+    <p class="text-muted mb-0">Acompanhe todas as avaliações realizadas pelo modelo Tev1.</p>
+  </div>
+</div>
+
+<% if @qualifications.any? %>
+  <div class="card">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Lead</th>
+              <th scope="col">Empresa</th>
+              <th scope="col" class="text-center">Status</th>
+              <th scope="col" class="text-center">Score</th>
+              <th scope="col" class="text-center">Confiança</th>
+              <th scope="col" class="text-center">Modelo</th>
+              <th scope="col">Avaliado em</th>
+              <th scope="col" class="text-end">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @qualifications.each do |q| %>
+              <tr>
+                <td><%= q.lead.id %></td>
+                <td><%= q.lead.company.name %></td>
+                <td class="text-center">
+                  <span class="badge bg-<%= q.qualified? ? "success" : "secondary" %>">
+                    <%= q.status.humanize %>
+                  </span>
+                </td>
+                <td class="text-center">
+                  <%= q.score ? "%.3f" % q.score : "<span class='text-muted'>—</span>".html_safe %>
+                </td>
+                <td class="text-center">
+                  <%= q.confidence ? q.confidence.humanize : "<span class='text-muted'>—</span>".html_safe %>
+                </td>
+                <td class="text-center"><%= q.model_version || "<span class='text-muted'>—</span>".html_safe %></td>
+                <td><%= q.evaluated_at ? l(q.evaluated_at, format: :long) : "<span class='text-muted'>—</span>".html_safe %></td>
+                <td class="text-end">
+                  <%= link_to lead_qualification_path(q), class: "btn btn-sm btn-outline-primary", title: "Ver" do %>
+                    <i class="bi bi-eye"></i>
+                  <% end %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <div class="empty-state py-5">
+    <i class="bi bi-search"></i>
+    <h3>Nenhuma qualificação cadastrada</h3>
+    <p class="text-muted">Os leads qualificados aparecerão aqui após o processamento pelo modelo IA.</p>
+  </div>
+<% end %>

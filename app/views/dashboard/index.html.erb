@@ -1,0 +1,241 @@
+<!-- Hero Section -->
+<div class="row mb-4">
+  <div class="col-12">
+    <div class="card border-0 shadow-sm" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%); color: #fff;">
+      <div class="card-body p-4 p-md-5">
+        <div class="row align-items-center">
+          <div class="col-lg-8">
+            <h2 class="mb-2 fw-bold">Bem-vindo ao CaptaLead</h2>
+            <p class="mb-0 opacity-90">
+              Qualificação inteligente de leads com IA local. Acompanhe o desempenho do classificador Tev1 e gerencie suas empresas e leads em um só lugar.
+            </p>
+          </div>
+          <div class="col-lg-4 text-end mt-3 mt-lg-0">
+            <i class="bi bi-robot" style="font-size: 5rem; opacity: 0.2;"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Estatísticas -->
+<div class="row mb-4">
+  <div class="col-md-3 mb-3">
+    <div class="card stat-card primary h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <span class="stat-label">Empresas cadastradas</span>
+            <span class="stat-value"><%= @companies_count %></span>
+          </div>
+          <span class="stat-icon"><i class="bi bi-buildings"></i></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="card stat-card info h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <span class="stat-label">Leads captados</span>
+            <span class="stat-value"><%= @leads_count %></span>
+          </div>
+          <span class="stat-icon"><i class="bi bi-people"></i></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="card stat-card success h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <span class="stat-label">Qualificados</span>
+            <span class="stat-value"><%= @qualified_count %></span>
+          </div>
+          <span class="stat-icon"><i class="bi bi-check2-circle"></i></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3 mb-3">
+    <div class="card stat-card warning h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <span class="stat-label">Pendentes</span>
+            <span class="stat-value"><%= @pending_count %></span>
+          </div>
+          <span class="stat-icon"><i class="bi bi-clock"></i></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Métricas e Distribuição -->
+<div class="row mb-4">
+  <div class="col-lg-6 mb-3">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-pie-chart me-2"></i>Distribuição de Qualificações</span>
+        <span class="badge bg-secondary small">Total: <%= @qualifications_count %></span>
+      </div>
+      <div class="card-body">
+        <% total = [@qualified_count, @not_qualified_count, @unclassified_count, @pending_count].sum %>
+        <% if total > 0 %>
+          <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted small">Qualificados</span>
+              <span class="fw-semibold"><%= @qualified_count %></span>
+            </div>
+            <div class="progress mb-3">
+              <div class="progress-bar bg-success" style="width: <%= qualified_pct %>%"></div>
+            </div>
+
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted small">Não Qualificados</span>
+              <span class="fw-semibold"><%= @not_qualified_count %></span>
+            </div>
+            <div class="progress mb-3">
+              <div class="progress-bar bg-secondary" style="width: <%= not_qualified_pct %>%"></div>
+            </div>
+
+            <div class="d-flex justify-content-between mb-1">
+              <span class="text-muted small">Não Classificados</span>
+              <span class="fw-semibold"><%= @unclassified_count %></span>
+            </div>
+            <div class="progress mb-3">
+              <div class="progress-bar bg-light text-dark border" style="width: <%= unclassified_pct %>%"></div>
+            </div>
+
+            <div class="d-flex justify-content-between mb-0">
+              <span class="text-muted small">Pendentes</span>
+              <span class="fw-semibold"><%= @pending_count %></span>
+            </div>
+            <div class="progress">
+              <div class="progress-bar bg-warning" style="width: <%= pending_pct %>%"></div>
+            </div>
+          </div>
+        <% else %>
+          <div class="empty-state py-4">
+            <i class="bi bi-pie-chart"></i>
+            <h3>Sem dados de qualificação</h3>
+            <p class="text-muted">Nenhum lead foi qualificado ainda.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6 mb-3">
+    <div class="card h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-bar-chart me-2"></i>Métricas de Desempenho</span>
+      </div>
+      <div class="card-body">
+        <% if @metrics && @metrics[:acuracia] %>
+          <div class="row text-center mb-4 g-3">
+            <div class="col-3">
+              <div class="card bg-light border-0 rounded-3 p-3">
+                <span class="badge bg-success small">Acurácia</span>
+                <p class="mb-0 mt-2 fw-bold fs-4"><%= number_to_percentage(@metrics[:acuracia] * 100, precision: 1) %></p>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="card bg-light border-0 rounded-3 p-3">
+                <span class="badge bg-primary small">Precisão</span>
+                <p class="mb-0 mt-2 fw-bold fs-4"><%= number_to_percentage(@metrics[:precisao] * 100, precision: 1) %></p>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="card bg-light border-0 rounded-3 p-3">
+                <span class="badge bg-info small">Recall</span>
+                <p class="mb-0 mt-2 fw-bold fs-4"><%= number_to_percentage(@metrics[:recall] * 100, precision: 1) %></p>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="card bg-light border-0 rounded-3 p-3">
+                <span class="badge bg-secondary small">Brier</span>
+                <p class="mb-0 mt-2 fw-bold fs-4"><%= @metrics[:brier] || "—" %></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="alert alert-info border-0 shadow-sm">
+            <i class="bi bi-info-circle me-2"></i>
+            <strong>Matriz de confusão:</strong>
+            VP: <%= @metrics[:matriz][:vp] %> · FP: <%= @metrics[:matriz][:fp] %> ·
+            FN: <%= @metrics[:matriz][:fn] %> · VN: <%= @metrics[:matriz][:vn] %>
+          </div>
+        <% else %>
+          <div class="empty-state py-4">
+            <i class="bi bi-graph-down"></i>
+            <h3>Sem métricas suficientes</h3>
+            <p class="text-muted">Preencha o campo <code>outcome</code> ("won" ou "lost") nas qualificações para gerar relatórios.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Calibração -->
+<% if @calibration.any? %>
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card h-100">
+        <div class="card-header">
+          <h5 class="mb-0"><i class="bi bi-thermometer me-2"></i>Calibração do Modelo por Faixa de Nota</h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead>
+                <tr>
+                  <th>Faixa de nota</th>
+                  <th>Leads</th>
+                  <th>Nota média</th>
+                  <th>Conversão real</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @calibration.each do |faixa| %>
+                  <tr>
+                    <td><span class="badge bg-primary"><%= faixa[:faixa] %></span></td>
+                    <td><%= faixa[:leads] %></td>
+                    <td><%= "%.2f" % faixa[:nota_media] %></td>
+                    <td><span class="fw-semibold"><%= number_to_percentage(faixa[:conversao_real] || 0, precision: 0) %></span></td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<!-- Status do Ollama -->
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-robot me-2"></i>Status do Modelo de IA</span>
+    <span class="badge bg-success">Online</span>
+  </div>
+  <div class="card-body">
+    <div class="row align-items-center">
+      <div class="col-md-8">
+        <h6 class="text-muted text-uppercase small">Modelo de decisão</h6>
+        <p class="mb-1 fw-semibold">Tev1:4b (Together AI / Qwen3.5)</p>
+        <p class="text-muted small mb-0">API de decisão local via Ollama · /v1/systemone · Dados não saem da sua infraestrutura</p>
+      </div>
+      <div class="col-md-4 text-end">
+        <span class="status-dot high"></span>
+        <span class="fw-semibold">Respondendo normalmente</span>
+      </div>
+    </div>
+  </div>
+</div>

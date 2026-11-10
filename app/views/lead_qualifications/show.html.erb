@@ -1,0 +1,115 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2><i class="bi bi-search me-2 text-primary"></i>Qualificação ##<%= @qualification.id %></h2>
+    <p class="text-muted mb-0">Detalhes completos da avaliação IA deste lead.</p>
+  </div>
+  <%= link_to "Voltar", lead_qualifications_path, class: "btn btn-secondary" %>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Lead e Empresa</h5>
+      </div>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item border-0 py-3">
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Lead</span>
+              <span class="fw-semibold">##<%= @qualification.lead.id %></span>
+            </div>
+          </li>
+          <li class="list-group-item border-0 py-3">
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Empresa</span>
+              <span class="fw-semibold"><%= @qualification.lead.company.name %></span>
+            </div>
+          </li>
+          <li class="list-group-item border-0 py-3">
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Modelo</span>
+              <span class="badge bg-ia"><%= @qualification.model_version %></span>
+            </div>
+          </li>
+          <li class="list-group-item border-0 py-3">
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Avaliado em</span>
+              <span class="fw-semibold"><%= l @qualification.evaluated_at, format: :long %></span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-robot me-2"></i>Resultado da IA</h5>
+      </div>
+      <div class="card-body">
+        <div class="row text-center mb-4">
+          <div class="col-4">
+            <div class="p-3 rounded bg-light">
+              <p class="text-muted small mb-1">Status</p>
+              <span class="badge bg-<%= @qualification.qualified? ? "success" : "secondary" %>">
+                <%= @qualification.status.humanize %>
+              </span>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-3 rounded bg-light">
+              <p class="text-muted small mb-1">Score</p>
+              <span class="fw-semibold fs-4"><%= "%.3f" % @qualification.score %></span>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-3 rounded bg-light">
+              <p class="text-muted small mb-1">Confiança</p>
+              <span class="badge bg-<%= case @qualification.confidence when "high" then "success" when "medium" then "warning" else "secondary" end %>">
+                <%= @qualification.confidence.humanize %>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <% if @qualification.outcome.present? %>
+          <div class="alert alert-<%= @qualification.outcome == "won" ? "success" : "danger" %> border-0">
+            <i class="bi bi-<%= @qualification.outcome == "won" ? "check-circle" : "x-circle" %> me-2"></i>
+            <strong>Resultado comercial:</strong> <%= @qualification.outcome.humanize %>
+          </div>
+        <% else %>
+          <div class="alert alert-warning border-0">
+            <i class="bi bi-clock me-2"></i>
+            <strong>Resultado comercial:</strong> Não preenchido
+          </div>
+        <% end %>
+
+        <% if @qualification.error_message.present? %>
+          <div class="alert alert-danger mt-3">
+            <i class="bi bi-exclamation-circle me-2"></i>
+            <strong>Erro:</strong> <%= @qualification.error_message %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h5 class="mb-0"><i class="bi bi-file-earmark-code me-2"></i>Snapshots</h5>
+  </div>
+  <div class="card-body">
+    <div class="row">
+      <div class="col-md-6">
+        <h6 class="text-muted small text-uppercase mb-3">Respostas (sanitizadas LGPD)</h6>
+        <div class="json-pre"><%= JSON.pretty_generate(@qualification.answers_snapshot) %></div>
+      </div>
+      <div class="col-md-6">
+        <h6 class="text-muted small text-uppercase mb-3">Critérios utilizados</h6>
+        <div class="json-pre"><%= JSON.pretty_generate(@qualification.criteria_snapshot) %></div>
+      </div>
+    </div>
+  </div>
+</div>

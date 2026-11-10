@@ -1,0 +1,55 @@
+<div class="row justify-content-center">
+  <div class="col-lg-9">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2><i class="bi bi-pencil me-2 text-primary"></i>Editar Empresa</h2>
+        <p class="text-muted mb-0">Atualize os dados e critérios de <%= @company.name %>.</p>
+      </div>
+      <%= link_to "Voltar", companies_path, class: "btn btn-outline-secondary" %>
+    </div>
+
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-white py-3 border-bottom">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-building me-2"></i>Editar <%= @company.name %></h5>
+      </div>
+      <div class="card-body p-4">
+        <%= form_with model: @company, local: true do |f| %>
+          <% if @company.errors.any? %>
+            <div class="alert alert-danger mb-4">
+              <i class="bi bi-exclamation-circle me-2"></i>
+              <strong><%= pluralize(@company.errors.count, "erro") %> impediu que esta empresa fosse atualizada:</strong>
+              <ul class="mb-0 mt-2">
+                <% @company.errors.each do |error| %>
+                  <li><%= error.full_message %></li>
+                <% end %>
+              </ul>
+            </div>
+          <% end %>
+
+          <div class="row mb-4">
+            <div class="col-md-8">
+              <%= f.label :name, "Nome da empresa", class: "form-label fw-bold" %>
+              <%= f.text_field :name, class: "form-control", value: @company.name %>
+              <p class="form-text text-muted small">Nome usado para identificar a empresa no sistema.</p>
+            </div>
+
+            <div class="col-md-4">
+              <div class="d-flex align-items-center">
+                <%= f.check_box :demo, class: "form-check-input me-2" %>
+                <%= f.label :demo, "Empresa de demonstração?", class: "form-label fw-bold mb-0" %>
+              </div>
+              <p class="form-text text-muted small">Leads de empresas demo não são qualificados automaticamente.</p>
+            </div>
+          </div>
+
+          <%= render "companies/criteria" %>
+
+          <div class="d-flex justify-content-between mt-5 pt-4 border-top">
+            <%= link_to "Voltar", companies_path, class: "btn btn-outline-secondary" %>
+            <%= f.submit "Atualizar Empresa", class: "btn btn-primary px-4" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

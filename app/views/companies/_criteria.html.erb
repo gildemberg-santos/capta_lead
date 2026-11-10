@@ -1,0 +1,94 @@
+<div class="card mb-4 shadow-sm border-0">
+  <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+    <div>
+      <h6 class="mb-0 fw-bold text-primary">
+        <i class="bi bi-sliders me-2"></i>Critérios de Qualificação IA
+      </h6>
+      <p class="text-muted small mb-0">Defina os critérios que o modelo Tev1 usará para classificar os leads desta empresa.</p>
+    </div>
+    <button type="button" class="btn btn-outline-primary btn-sm" id="reset-criteria">
+      <i class="bi bi-arrow-repeat me-1"></i> Restaurar Padrão
+    </button>
+  </div>
+  <div class="card-body p-4">
+
+    <!-- Instructions -->
+    <div class="mb-4">
+      <label class="form-label fw-bold">Instruções para o modelo <span class="badge bg-light text-dark border small ms-2">instructions</span></label>
+      <p class="form-text text-muted small mb-2">Orientações gerais enviadas ao Tev1 para avaliar cada lead.</p>
+      <%= text_area_tag "company[qualification_criteria][instructions]", criteria_value("instructions"), class: "form-control", rows: 3, placeholder: "Este lead é qualificado para comprar o produto ou serviço da empresa?" %>
+    </div>
+
+    <!-- Qualified -->
+    <div class="mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <label class="form-label fw-bold text-success">Critério: QUALIFICADO <span class="badge bg-success">Critério TRUE</span></label>
+      </div>
+      <p class="form-text text-muted small mb-2">Condições para um lead ser considerado qualificado.</p>
+      <%= text_area_tag "company[qualification_criteria][qualified]", criteria_value("qualified"), class: "form-control", rows: 3, placeholder: "Porte e orçamento compatíveis, decisor ou influenciador..." %>
+    </div>
+
+    <!-- Not Qualified -->
+    <div class="mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <label class="form-label fw-bold text-danger">Critério: NÃO QUALIFICADO <span class="badge bg-danger">Critério FALSE</span></label>
+      </div>
+      <p class="form-text text-muted small mb-2">Condições para um lead ser considerado não qualificado.</p>
+      <%= text_area_tag "company[qualification_criteria][not_qualified]", criteria_value("not_qualified"), class: "form-control", rows: 3, placeholder: "Sem orçamento, sem poder de decisão..." %>
+    </div>
+
+    <!-- Threshold -->
+    <div class="mb-4">
+      <label class="form-label fw-bold">Limiar de aprovação <span class="badge bg-light text-dark border small ms-2">threshold</span></label>
+      <p class="form-text text-muted small mb-2">Nota mínima (0 a 1) para classificar o lead como qualificado.</p>
+      <div class="input-group">
+        <span class="input-group-text">0.</span>
+        <%= number_field_tag "company[qualification_criteria][threshold]", (criteria_value("threshold") || 0.5).to_f * 10, class: "form-control", min: "0", max: "10", step: "0.1" %>
+      </div>
+      <div class="progress mt-2" style="height: 6px;">
+        <div class="progress-bar bg-primary" style="width: <%= ((criteria_value("threshold") || 0.5) * 100).to_i %>%"></div>
+      </div>
+      <p class="form-text text-muted small mt-1">
+        <%= "#{((criteria_value("threshold") || 0.5) * 100).to_i}% de probabilidade mínima para qualificar" %>
+      </p>
+    </div>
+
+    <!-- Preview JSON -->
+    <div class="mt-4 p-3 bg-light rounded border">
+      <h6 class="mb-2 text-muted small text-uppercase fw-bold">
+        <i class="bi bi-code-square me-1"></i>Preview JSON (enviado ao modelo)
+      </h6>
+      <pre class="json-preview small mb-0" id="criteria-preview"><%= JSON.pretty_generate(preview_criteria) %></pre>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Atualiza preview JSON em tempo real
+  document.querySelectorAll('textarea, input[name*="qualification_criteria"]').forEach(el => {
+    el.addEventListener('input', () => {
+      const preview = document.getElementById('criteria-preview');
+      if (preview) {
+        preview.textContent = JSON.stringify({
+          instructions: document.querySelector('textarea[name="company[qualification_criteria][instructions]"]').value,
+          qualified: document.querySelector('textarea[name="company[qualification_criteria][qualified]"]').value,
+          not_qualified: document.querySelector('textarea[name="company[qualification_criteria][not_qualized]"]').value || document.querySelector('textarea[name="company[qualification_criteria][not_qualified]"]').value,
+          threshold: parseFloat(document.querySelector('input[name="company[qualification_criteria][threshold]"]').value) / 10 || 0.5
+        }, null, 2);
+      }
+    });
+  });
+
+  // Restaurar padrão
+  document.getElementById('reset-criteria')?.addEventListener('click', () => {
+    if (confirm('Restaurar os critérios para os valores padrão (BANT)?')) {
+      document.querySelector('textarea[name="company[qualification_criteria][instructions]"]').value = "Este lead é qualificado para comprar o produto ou serviço da empresa?";
+      document.querySelector('textarea[name="company[qualification_criteria][qualified]"]').value = "Porte e orçamento compatíveis, decisor ou influenciador, necessidade clara e urgência real.";
+      document.querySelector('textarea[name="company[qualification_criteria][not_qualified]"]').value = "Sem orçamento, sem poder de decisão, sem necessidade clara ou sem prazo.";
+      document.querySelector('input[name="company[qualification_criteria][threshold]"]').value = "5";
+      document.querySelector('.progress-bar').style.width = '50%';
+      document.querySelectorAll('textarea, input[name*="qualification_criteria"]').forEach(el => el.dispatchEvent(new Event('input')));
+    }
+  });
+</script>

@@ -1,0 +1,78 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2><i class="bi bi-people me-2 text-primary"></i>Leads</h2>
+    <p class="text-muted mb-0">Acompanhe todos os leads capturados e suas qualificações.</p>
+  </div>
+  <%= link_to "Novo Lead", new_lead_path, class: "btn btn-primary" %>
+</div>
+
+<% if @leads.any? %>
+  <div class="card">
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th scope="col" class="text-center">ID</th>
+              <th scope="col">Empresa</th>
+              <th scope="col">Funcionários</th>
+              <th scope="col">Prazo de contratação</th>
+              <th scope="col" class="text-center">Qualificação</th>
+              <th scope="col" class="text-center">Score</th>
+              <th scope="col" class="text-end">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @leads.each do |lead| %>
+              <tr>
+                <td class="text-center"><%= lead.id %></td>
+                <td><%= lead.company.name %></td>
+                <td><%= lead_answer(lead, "Quantos funcionários?") %></td>
+                <td><%= lead_answer(lead, "Quando pretende contratar?") %></td>
+                <td class="text-center">
+                  <% if lead.lead_qualification %>
+                    <span class="badge bg-<%= lead.lead_qualification.qualified? ? "success" : "secondary" %>">
+                      <%= lead.lead_qualification.status.humanize %>
+                    </span>
+                  <% else %>
+                    <span class="text-muted">Não qualificado</span>
+                  <% end %>
+                </td>
+                <td class="text-center">
+                  <% if lead.lead_qualification&.score %>
+                    <span class="fw-semibold"><%= "%.3f" % lead.lead_qualification.score %></span>
+                  <% else %>
+                    <span class="text-muted">—</span>
+                  <% end %>
+                </td>
+                <td class="text-end">
+                  <div class="btn-group">
+                    <%= link_to lead_path(lead), class: "btn btn-sm btn-outline-primary", title: "Ver" do %>
+                      <i class="bi bi-eye"></i>
+                    <% end %>
+                    <% if !lead.lead_qualification && !lead.demo? && Flipper.enabled?(:lead_qualification, lead.company) %>
+                      <%= link_to qualify_lead_path(lead), method: :post, class: "btn btn-sm btn-success", data: { confirm: "Deseja enfileirar a qualificação deste lead?" }, title: "Qualificar" do %>
+                        <i class="bi bi-robot"></i>
+                      <% end %>
+                    <% elsif lead.demo? %>
+                      <span class="badge bg-warning text-dark small">Demo</span>
+                    <% else %>
+                      <span class="badge bg-secondary small">OK</span>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+<% else %>
+  <div class="empty-state py-5">
+    <i class="bi bi-person"></i>
+    <h3>Nenhum lead cadastrado</h3>
+    <p class="text-muted">Cadastre seu primeiro lead para começar a usar a qualificação por IA.</p>
+    <%= link_to "Cadastrar Lead", new_lead_path, class: "btn btn-primary" %>
+  </div>
+<% end %>

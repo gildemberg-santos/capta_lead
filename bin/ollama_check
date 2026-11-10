@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+# Verifica se o Ollama local está disponível e se o modelo Tev1 está baixado.
+# Rode antes de iniciar a aplicação para evitar surpresas.
+
+set -euo pipefail
+
+OLLAMA_URL="${OLLAMA_URL:-http://localhost:11434}"
+MODEL="${QUALIFICATION_MODEL:-tev1:4b}"
+
+echo "==> Verificando Ollama em ${OLLAMA_URL}..."
+
+if ! curl -sSf "${OLLAMA_URL}/api/tags" >/dev/null 2>&1; then
+  echo "ERRO: Ollama não respondeu em ${OLLAMA_URL}"
+  echo "   Certifique-se de que o Ollama está rodando localmente (ex.: 'ollama serve')."
+  exit 1
+fi
+
+echo "   Ollama está respondendo."
+
+echo "==> Verificando se o modelo '${MODEL}' está disponível..."
+if curl -sSf "${OLLAMA_URL}/api/tags" 2>/dev/null | grep -q "${MODEL}"; then
+  echo "   Modelo '${MODEL}' encontrado. Pronto para usar."
+else
+  echo "AVISO: Modelo '${MODEL}' não encontrado localmente."
+  echo "   Baixe com: ollama pull ${MODEL}"
+  exit 1
+fi
+
+echo "==> Teste rápido da API de decisão (/v1/systemone)..."
+RESPONSE=$(curl -sS -X POST "${OLLAMA_URL}/v1/systemone" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "'"${MODEL}"'",
+    "state": {
+      "Quantos funcionários?": "De 11 a 50",
+      "Quando pretende contratar?": "Nos próximos 30 dias"
+    },
+    "questions": {
+      "qualificado": {
+        "type": "noul",
+        "instructions": "Este lead é qualificado?",
+        "criteria": {
+          "true": "Empresa com funcionários e prazo definido.",
+          "false": "Sem funcionários ou sem prazo."
+        }
+      }
+    }
+  }' 2>/dev/null) || true
+
+if echo "${RESPONSE}" | grep -q '"noul"'; then
+  NOUL=$(echo "${RESPONSE}" | ruby -rjson -e 'puts JSON.parse(STDIN.read).dig("answers","qualificado","noul")' 2>/dev/null || echo "?")
+  echo "   OK — nóul (probabilidade) retornado: ${NOUL}"
+else
+  echo "AVISO: A resposta da API de decisão não contém 'noul'."
+  echo "   Resposta recebida: ${RESPONSE}"
+  echo "   Verifique se o modelo suporta /v1/systemone."
+fi
+
+echo ""
+echo "==> Tudo validado. Você pode iniciar a aplicação."

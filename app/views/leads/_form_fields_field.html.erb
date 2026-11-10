@@ -1,0 +1,35 @@
+<div class="field-row row g-3 mb-3 p-3 border rounded bg-light" id="field-<%= index %>">
+  <input type="hidden" name="lead[form_fields_attributes][<%= index %>][_destroy]" value="0" class="field-destroy">
+
+  <div class="col-md-3">
+    <label class="form-label small fw-bold">Label do campo</label>
+    <input type="text" name="lead[form_fields_attributes][<%= index %>][label]" class="form-control form-control-sm field-label" value="<%= field["label"] %>" placeholder="Ex: Quantos funcionários?">
+  </div>
+
+  <div class="col-md-2">
+    <label class="form-label small fw-bold">Tipo</label>
+    <select name="lead[form_fields_attributes][<%= index %>][type]" class="form-select form-select-sm field-type">
+      <option value="text" <%= "selected" if field["type"] == "text" %>>Texto</option>
+      <option value="select" <%= "selected" if field["type"] == "select" %>>Seleção</option>
+      <option value="phone" <%= "selected" if field["type"] == "phone" %>>Telefone</option>
+      <option value="whatsapp" <%= "selected" if field["type"] == "whatsapp" %>>WhatsApp</option>
+      <option value="email" <%= "selected" if field["type"] == "email" %>>E-mail</option>
+      <option value="cpf" <%= "selected" if field["type"] == "cpf" %>>CPF</option>
+      <option value="cnpj" <%= "selected" if field["type"] == "cnpj" %>>CNPJ</option>
+      <option value="address" <%= "selected" if field["type"] == "address" %>>Endereço</option>
+      <option value="textarea" <%= "selected" if field["type"] == "textarea" %>>Texto Longo</option>
+      <option value="password" <%= "selected" if field["type"] == "password" %>>Senha</option>
+    </select>
+  </div>
+
+  <div class="col-md-4">
+    <label class="form-label small fw-bold">Valor da resposta</label>
+    <input type="text" name="lead[form_fields_attributes][<%= index %>][value]" class="form-control form-control-sm field-value" value="<%= field["value"] %>" placeholder="Resposta do lead...">
+  </div>
+
+  <div class="col-md-2 d-flex align-items-end">
+    <button type="button" class="btn btn-outline-danger btn-sm remove-field w-100" onclick="removeField(this)">
+      <i class="bi bi-trash"></i> Remover
+    </button>
+  </div>
+</div>

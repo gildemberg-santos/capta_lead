@@ -1,0 +1,90 @@
+<div class="card mb-4 shadow-sm border-0">
+  <div class="card-header bg-white border-bottom">
+    <h6 class="mb-0 fw-bold text-primary">
+      <i class="bi bi-list me-2"></i>Campos do Formulário de Captação
+    </h6>
+  </div>
+  <div class="card-body">
+    <p class="text-muted small mb-3">
+      Defina os campos que o lead preencheu no formulário de captação. 
+      Campos com tipo <code>phone</code>, <code>email</code>, <code>whatsapp</code>, <code>cpf</code>, 
+      <code>cnpj</code> ou <code>address</code> serão automaticamente sanitizados antes de enviar ao modelo IA (LGPD).
+    </p>
+
+    <div id="fields-container">
+      <% if @lead.form_fields_array.any? %>
+        <% @lead.form_fields_array.each_with_index do |field, idx| %>
+          <% unique_index = "exist_#{idx}_#{@lead.id || Time.current.to_i}" %>
+          <%= render "leads/form_fields_field", index: unique_index, field: field %>
+        <% end %>
+      <% else %>
+        <!-- Campo vazio inicial -->
+        <% unique_index = "new_0_#{Time.current.to_i}" %>
+        <%= render "leads/form_fields_field", index: unique_index, field: { "label" => "", "type" => "text", "value" => "" } %>
+      <% end %>
+    </div>
+
+    <div class="d-flex gap-2 mt-3">
+      <button type="button" id="add-field" class="btn btn-outline-primary btn-sm">
+        <i class="bi bi-plus-circle me-1"></i> Adicionar Campo
+      </button>
+      <button type="button" id="add-phone" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-telephone me-1"></i> Telefone
+      </button>
+      <button type="button" id="add-email" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-envelope me-1"></i> E-mail
+      </button>
+      <button type="button" id="add-textarea" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-textarea me-1"></i> Texto Longo
+      </button>
+      <button type="button" id="add-select" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-list-ul me-1"></i> Seleção
+      </button>
+    </div>
+
+    <!-- Template oculto para adicionar novos campos via JS -->
+    <div id="field-template" style="display: none;">
+      <div class="field-row row g-3 mb-3 p-3 border rounded bg-light" id="field-NEW_FIELD_INDEX">
+        <input type="hidden" name="lead[form_fields_attributes][NEW_FIELD_INDEX][_destroy]" value="0" class="field-destroy">
+
+        <div class="col-md-3">
+          <label class="form-label small fw-bold">Label do campo</label>
+          <input type="text" name="lead[form_fields_attributes][NEW_FIELD_INDEX][label]" class="form-control form-control-sm field-label" value="" placeholder="Ex: Quantos funcionários?">
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label small fw-bold">Tipo</label>
+          <select name="lead[form_fields_attributes][NEW_FIELD_INDEX][type]" class="form-select form-select-sm field-type">
+            <option value="text">Texto</option>
+            <option value="select">Seleção</option>
+            <option value="phone">Telefone</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="email">E-mail</option>
+            <option value="cpf">CPF</option>
+            <option value="cnpj">CNPJ</option>
+            <option value="address">Endereço</option>
+            <option value="textarea">Texto Longo</option>
+            <option value="password">Senha</option>
+          </select>
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label small fw-bold">Valor da resposta</label>
+          <input type="text" name="lead[form_fields_attributes][NEW_FIELD_INDEX][value]" class="form-control form-control-sm field-value" value="" placeholder="Resposta do lead...">
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+          <button type="button" class="btn btn-outline-danger btn-sm remove-field w-100" onclick="removeField(this)">
+            <i class="bi bi-trash"></i> Remover
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="alert alert-info mt-3 border-0 bg-light">
+      <i class="bi bi-info-circle me-2"></i>
+      <strong>Dica:</strong> Use o botão "Adicionar Campo" para criar quantos campos precisar. 
+      Cada campo precisa de: <strong>Label</strong> (nome do campo), <strong>Tipo</strong> e <strong>Valor</strong> (resposta do lead).
+    </div>
+  </div>
+</div>

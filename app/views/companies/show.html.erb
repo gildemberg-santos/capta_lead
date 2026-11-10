@@ -1,0 +1,114 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h2><i class="bi bi-building me-2 text-primary"></i><%= @company.name %></h2>
+    <p class="text-muted mb-0">Detalhes da empresa e seus leads</p>
+  </div>
+  <div class="d-flex gap-2">
+    <%= link_to "Editar", edit_company_path(@company), class: "btn btn-outline-secondary" %>
+    <%= link_to "Voltar", companies_path, class: "btn btn-secondary" %>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Informações</h5>
+      </div>
+      <div class="card-body">
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item border-0 py-3">
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Nome</span>
+              <span class="fw-semibold"><%= @company.name %></span>
+            </div>
+          </li>
+          <li class="list-group-item border-0 py-3">
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Demonstração</span>
+              <span class="badge <%= @company.demo? ? 'bg-warning' : 'bg-success' %>"><%= @company.demo? ? "Sim" : "Não" %></span>
+            </div>
+          </li>
+          <li class="list-group-item border-0 py-3">
+            <div class="d-flex justify-content-between">
+              <span class="text-muted">Criada em</span>
+              <span class="fw-semibold"><%= l @company.created_at, format: :long %></span>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-sliders me-2"></i>Critérios de Qualificação</h5>
+      </div>
+      <div class="card-body">
+        <div class="json-pre"><%= JSON.pretty_generate(@company.qualification_criteria_or_default) %></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="mb-0"><i class="bi bi-people me-2"></i>Leads (<%= @leads.count %>)</h5>
+  </div>
+  <div class="card-body p-0">
+    <% if @leads.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">Qualificação</th>
+              <th scope="col" class="text-center">Score</th>
+              <th scope="col">Status</th>
+              <th scope="col" class="text-end">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @leads.each do |lead| %>
+              <tr>
+                <td><%= lead.id %></td>
+                <td>
+                  <% if lead.lead_qualification %>
+                    <span class="badge bg-<%= lead.lead_qualification.qualified? ? "success" : "secondary" %>">
+                      <%= lead.lead_qualification.status.humanize %>
+                    </span>
+                  <% else %>
+                    <span class="text-muted">Não qualificado</span>
+                  <% end %>
+                </td>
+                <td class="text-center">
+                  <% if lead.lead_qualification&.score %>
+                    <%= "%.3f" % lead.lead_qualification.score %>
+                  <% else %>
+                    <span class="text-muted">—</span>
+                  <% end %>
+                </td>
+                <td>
+                  <% if lead.lead_qualification %>
+                    <%= lead.lead_qualification.status.humanize %>
+                  <% else %>
+                    <span class="text-muted">Pendente</span>
+                  <% end %>
+                </td>
+                <td class="text-end">
+                  <%= link_to "Ver", lead_path(lead), class: "btn btn-sm btn-outline-primary" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state py-4">
+        <i class="bi bi-person"></i>
+        <h3>Nenhum lead</h3>
+        <p class="text-muted">Esta empresa ainda não tem leads cadastrados.</p>
+      </div>
+    <% end %>
+  </div>
+</div>
