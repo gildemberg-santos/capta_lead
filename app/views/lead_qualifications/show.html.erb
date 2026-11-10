@@ -66,8 +66,8 @@
           <div class="col-4">
             <div class="p-3 rounded bg-light">
               <p class="text-muted small mb-1">Confiança</p>
-              <span class="badge bg-<%= case @qualification.confidence when "high" then "success" when "medium" then "warning" else "secondary" end %>">
-                <%= @qualification.confidence.humanize %>
+              <span class="badge bg-<%= @qualification.confidence ? (case @qualification.confidence when "high" then "success" when "medium" then "warning" else "secondary" end) : "secondary" %>">
+                <%= @qualification.confidence ? @qualification.confidence.humanize : "—" %>
               </span>
             </div>
           </div>
