@@ -46,9 +46,13 @@ class LeadsController < ApplicationController
   def qualify
     @lead = Lead.find(params[:id])
 
-    Qualification::Enqueuer.call(@lead)
+    enfileirado = Qualification::Enqueuer.call(@lead)
 
-    redirect_to lead_path(@lead), notice: "Qualificação enfileirada com sucesso. Aguarde o processamento."
+    if enfileirado
+      redirect_to lead_path(@lead), notice: "Qualificação enfileirada com sucesso. Aguarde o processamento."
+    else
+      redirect_to lead_path(@lead), alert: "Não foi possível enfileirar a qualificação deste lead. Verifique se ele não é de demonstração, se o recurso está ativado para a empresa ou se já não foi qualificado anteriormente."
+    end
   end
 
   private
