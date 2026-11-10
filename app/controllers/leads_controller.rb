@@ -58,7 +58,7 @@ class LeadsController < ApplicationController
   def requalify
     @lead = Lead.find(params[:id])
 
-    reprocessado = Qualification::Enqueuer.retry!(@lead)
+    reprocessado = Qualification::Enqueuer.reprocess!(@lead)
 
     if reprocessado
       redirect_to lead_path(@lead), notice: "Qualificação reenfileirada com sucesso. Aguarde o processamento."

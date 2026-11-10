@@ -18,7 +18,7 @@ module Qualification
 
   # Reprocessa uma qualificacao que falhou (unclassified ou failed).
   # Volta o status para pending e re-enfileira o job.
-  def self.retry!(lead)
+  def self.reprocess!(lead)
     return if lead.demo?
     return unless Flipper.enabled?(:lead_qualification, lead.company)
 
