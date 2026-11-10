@@ -46,8 +46,8 @@ leads_contabil = [
     form_fields: [
       { "label" => "Quantos funcionários?", "type" => "select", "value" => "De 11 a 50" },
       { "label" => "Quando pretende contratar?", "type" => "select", "value" => "Nos próximos 30 dias" },
-      { "label": "Melhor contato", "type": "phone", "value": "(11) 98765-4321" },
-      { "label": "Conte sua necessidade", "type": "textarea", "value": "Preciso de contabilidade completa para minha empresa de comércio. Me chama no 11 98765-4321 ou contato@empresa.com.br." }
+      { "label" => "Melhor contato", "type": "phone", "value": "(11) 98765-4321" },
+      { "label" => "Conte sua necessidade", "type": "textarea", "value": "Preciso de contabilidade completa para minha empresa de comércio. Me chama no 11 98765-4321 ou contato@empresa.com.br." }
     ],
     score: 0.92,
     status: "qualified",
@@ -59,8 +59,8 @@ leads_contabil = [
     form_fields: [
       { "label" => "Quantos funcionários?", "type" => "select", "value" => "De 51 a 200" },
       { "label" => "Quando pretende contratar?", "type" => "select", "value" => "Nos próximos 60 dias" },
-      { "label": "Melhor contato", "type": "phone", "value": "(21) 91234-5678" },
-      { "label": "Conte sua necessidade", "type": "textarea", "value": "Somos uma prestadora de serviços e precisamos de assessoria contábil. Email: rh@techsolutions.com.br" }
+      { "label" => "Melhor contato", "type": "phone", "value": "(21) 91234-5678" },
+      { "label" => "Conte sua necessidade", "type": "textarea", "value": "Somos uma prestadora de serviços e precisamos de assessoria contábil. Email: rh@techsolutions.com.br" }
     ],
     score: 0.78,
     status: "qualified",
@@ -72,8 +72,8 @@ leads_contabil = [
     form_fields: [
       { "label" => "Quantos funcionários?", "type" => "select", "value" => "De 1 a 10" },
       { "label" => "Quando pretende contratar?", "type" => "select", "value" => "Nos próximos 90 dias" },
-      { "label": "Melhor contato", "type": "phone", "value": "(31) 99999-1111" },
-      { "label": "Conte sua necessidade", "type": "textarea", "value": "MEI aberto há 6 meses, preciso regularizar impostos." }
+      { "label" => "Melhor contato", "type": "phone", "value": "(31) 99999-1111" },
+      { "label" => "Conte sua necessidade", "type": "textarea", "value": "MEI aberto há 6 meses, preciso regularizar impostos." }
     ],
     score: 0.53,
     status: "qualified",
@@ -85,8 +85,8 @@ leads_contabil = [
     form_fields: [
       { "label" => "Quantos funcionários?", "type" => "select", "value" => "Sou MEI" },
       { "label" => "Quando pretende contratar?", "type" => "select", "value" => "Sem previsão" },
-      { "label": "Melhor contato", "type": "phone", "value": "(41) 98888-7777" },
-      { "label": "Conte sua necessidade", "type": "textarea", "value": "Só quero uma cotação de preço para declarar imposto de renda." }
+      { "label" => "Melhor contato", "type": "phone", "value": "(41) 98888-7777" },
+      { "label" => "Conte sua necessidade", "type": "textarea", "value": "Só quero uma cotação de preço para declarar imposto de renda." }
     ],
     score: 0.18,
     status: "not_qualified",
@@ -98,8 +98,8 @@ leads_contabil = [
     form_fields: [
       { "label" => "Quantos funcionários?", "type" => "select", "value" => "De 1 a 10" },
       { "label" => "Quando pretende contratar?", "type" => "select", "value" => "Sem previsão" },
-      { "label": "Melhor contato", "type": "phone", "value": "(51) 97777-6666" },
-      { "label": "Conte sua necessidade", "type": "textarea", "value": "Não tenho orçamento agora, só pesquisando." }
+      { "label" => "Melhor contato", "type": "phone", "value": "(51) 97777-6666" },
+      { "label" => "Conte sua necessidade", "type": "textarea", "value": "Não tenho orçamento agora, só pesquisando." }
     ],
     score: 0.24,
     status: "not_qualified",
@@ -121,20 +121,7 @@ leads_contabil = [
 leads_contabil.each_with_index do |attrs, idx|
   lead = contabil_norte.leads.create!(form_fields: attrs[:form_fields])
 
-  # Monta snapshot sanitizado de forma segura (campos podem não existir)
-  answers_snapshot = {}
-  attrs[:form_fields].each do |field|
-    valor = field["value"]
-    if field["type"] == "phone" || field["type"] == "whatsapp"
-      valor = "[phone_removido]"
-    elsif field["type"] == "email"
-      valor = "[email_removido]"
-    elsif field["label"] == "Conte sua necessidade"
-      valor = valor.gsub(/\d{2}\s?\d{4,5}[-\s]?\d{4}/, "[phone_removido]")
-                  .gsub(/[\w.+-]+@[\w-]+\.[\w.]+/, "[email_removido]")
-    end
-    answers_snapshot[field["label"]] = valor
-  end
+  answers_snapshot = Qualification::AnswerSanitizer.call(attrs[:form_fields])
 
   qualification = LeadQualification.find_or_create_by!(lead: lead) do |q|
     q.status = attrs[:status]
@@ -158,8 +145,8 @@ leads_tech = [
     form_fields: [
       { "label" => "Quantos funcionários?", "type" => "select", "value" => "De 11 a 50" },
       { "label" => "Quando pretende contratar?", "type" => "select", "value" => "Nos próximos 30 dias" },
-      { "label": "Melhor contato", "type": "phone", "value": "(11) 95555-4444" },
-      { "label": "Conte sua necessidade", "type": "textarea", "value": "Empresa de tecnologia precisa de software de gestão. contato@techsolutions.com.br" }
+      { "label" => "Melhor contato", "type": "phone", "value": "(11) 95555-4444" },
+      { "label" => "Conte sua necessidade", "type": "textarea", "value": "Empresa de tecnologia precisa de software de gestão. contato@techsolutions.com.br" }
     ],
     score: 0.85,
     status: "qualified",
@@ -170,8 +157,8 @@ leads_tech = [
     form_fields: [
       { "label" => "Quantos funcionários?", "type" => "select", "value" => "De 1 a 10" },
       { "label" => "Quando pretende contratar?", "type" => "select", "value" => "Nos próximos 60 dias" },
-      { "label": "Melhor contato", "type": "phone", "value": "(11) 94444-3333" },
-      { "label": "Conte sua necessidade", "type": "textarea", "value": "Pequena empresa, só queremos saber preço." }
+      { "label" => "Melhor contato", "type": "phone", "value": "(11) 94444-3333" },
+      { "label" => "Conte sua necessidade", "type": "textarea", "value": "Pequena empresa, só queremos saber preço." }
     ],
     score: 0.31,
     status: "not_qualified",
@@ -182,8 +169,8 @@ leads_tech = [
     form_fields: [
       { "label" => "Quantos funcionários?", "type" => "select", "value" => "De 51 a 200" },
       { "label" => "Quando pretende contratar?", "type" => "select", "value" => "Nos próximos 90 dias" },
-      { "label": "Melhor contato", "type": "phone", "value": "(11) 93333-2222" },
-      { "label": "Conte sua necessidade", "type": "textarea", "value": "Precisamos de ERP para gestão de estoque e financeiro." }
+      { "label" => "Melhor contato", "type": "phone", "value": "(11) 93333-2222" },
+      { "label" => "Conte sua necessidade", "type": "textarea", "value": "Precisamos de ERP para gestão de estoque e financeiro." }
     ],
     score: 0.67,
     status: "qualified",
@@ -195,19 +182,7 @@ leads_tech = [
 leads_tech.each_with_index do |attrs, idx|
   lead = tech_solutions.leads.create!(form_fields: attrs[:form_fields])
 
-  # Monta snapshot sanitizado de forma segura
-  answers_snapshot = {}
-  attrs[:form_fields].each do |field|
-    valor = field["value"]
-    if field["type"] == "phone" || field["type"] == "whatsapp"
-      valor = "[phone_removido]"
-    elsif field["type"] == "email"
-      valor = "[email_removido]"
-    elsif field["label"] == "Conte sua necessidade"
-      valor = valor.gsub(/[\w.+-]+@[\w-]+\.[\w.]+/, "[email_removido]")
-    end
-    answers_snapshot[field["label"]] = valor
-  end
+  answers_snapshot = Qualification::AnswerSanitizer.call(attrs[:form_fields])
 
   LeadQualification.find_or_create_by!(lead: lead) do |q|
     q.status = attrs[:status]
@@ -230,8 +205,8 @@ lead_pendente = contabil_norte.leads.create!(
   form_fields: [
     { "label" => "Quantos funcionários?", "type" => "select", "value" => "De 11 a 50" },
     { "label" => "Quando pretende contratar?", "type" => "select", "value" => "Nos próximos 30 dias" },
-    { "label": "Melhor contato", "type": "phone", "value": "(11) 91111-2222" },
-    { "label": "Conte sua necessidade", "type": "textarea", "value": "Quero contratar contabilidade urgentemente." }
+    { "label" => "Melhor contato", "type": "phone", "value": "(11) 91111-2222" },
+    { "label" => "Conte sua necessidade", "type": "textarea", "value": "Quero contratar contabilidade urgentemente." }
   ]
 )
 

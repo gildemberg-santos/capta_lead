@@ -35,7 +35,7 @@
           <li class="list-group-item border-0 py-3">
             <div class="d-flex justify-content-between">
               <span class="text-muted">Avaliado em</span>
-              <span class="fw-semibold"><%= l @qualification.evaluated_at, format: :long %></span>
+              <span class="fw-semibold"><%= @qualification.evaluated_at ? l(@qualification.evaluated_at, format: :long) : "—" %></span>
             </div>
           </li>
         </ul>
@@ -52,7 +52,7 @@
           <div class="col-4">
             <div class="p-3 rounded bg-light">
               <p class="text-muted small mb-1">Status</p>
-              <span class="badge bg-<%= @qualification.qualified? ? "success" : "secondary" %>">
+              <span class="badge bg-<%= @qualification.status_qualified? ? "success" : "secondary" %>">
                 <%= @qualification.status.humanize %>
               </span>
             </div>
@@ -60,7 +60,7 @@
           <div class="col-4">
             <div class="p-3 rounded bg-light">
               <p class="text-muted small mb-1">Score</p>
-              <span class="fw-semibold fs-4"><%= "%.3f" % @qualification.score %></span>
+              <span class="fw-semibold fs-4"><%= @qualification.score ? "%.3f" % @qualification.score : "—" %></span>
             </div>
           </div>
           <div class="col-4">

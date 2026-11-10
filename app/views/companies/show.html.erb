@@ -74,7 +74,7 @@
                 <td><%= lead.id %></td>
                 <td>
                   <% if lead.lead_qualification %>
-                    <span class="badge bg-<%= lead.lead_qualification.qualified? ? "success" : "secondary" %>">
+                    <span class="badge bg-<%= lead.lead_qualification.status_qualified? ? "success" : "secondary" %>">
                       <%= lead.lead_qualification.status.humanize %>
                     </span>
                   <% else %>

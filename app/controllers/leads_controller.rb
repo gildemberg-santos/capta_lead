@@ -46,23 +46,7 @@ class LeadsController < ApplicationController
   def qualify
     @lead = Lead.find(params[:id])
 
-    if @lead.demo?
-      redirect_to lead_path(@lead), alert: "Não é possível qualificar leads de demonstração."
-      return
-    end
-
-    unless Flipper.enabled?(:lead_qualification, @lead.company)
-      redirect_to lead_path(@lead), alert: "A qualificação por IA não está ativada para esta empresa."
-      return
-    end
-
-    if LeadQualification.exists?(lead_id: @lead.id)
-      redirect_to lead_path(@lead), alert: "Este lead já foi qualificado anteriormente."
-      return
-    end
-
-    LeadQualification.create!(lead: @lead, status: "pending")
-    QualifyLeadJob.perform_async(@lead.id)
+    Qualification::Enqueuer.call(@lead)
 
     redirect_to lead_path(@lead), notice: "Qualificação enfileirada com sucesso. Aguarde o processamento."
   end

@@ -73,7 +73,7 @@
         preview.textContent = JSON.stringify({
           instructions: document.querySelector('textarea[name="company[qualification_criteria][instructions]"]').value,
           qualified: document.querySelector('textarea[name="company[qualification_criteria][qualified]"]').value,
-          not_qualified: document.querySelector('textarea[name="company[qualification_criteria][not_qualized]"]').value || document.querySelector('textarea[name="company[qualification_criteria][not_qualified]"]').value,
+          not_qualified: document.querySelector('textarea[name="company[qualification_criteria][not_qualified]"]').value,
           threshold: parseFloat(document.querySelector('input[name="company[qualification_criteria][threshold]"]').value) / 10 || 0.5
         }, null, 2);
       }

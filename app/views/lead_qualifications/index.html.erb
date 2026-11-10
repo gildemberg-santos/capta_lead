@@ -28,7 +28,7 @@
                 <td><%= q.lead.id %></td>
                 <td><%= q.lead.company.name %></td>
                 <td class="text-center">
-                  <span class="badge bg-<%= q.qualified? ? "success" : "secondary" %>">
+                  <span class="badge bg-<%= q.status_qualified? ? "success" : "secondary" %>">
                     <%= q.status.humanize %>
                   </span>
                 </td>

@@ -6,5 +6,5 @@ class LeadQualification < ApplicationRecord
     qualified: "qualified",
     not_qualified: "not_qualified",
     unclassified: "unclassified"
-  }
+  }, prefix: :status
 end
