@@ -9,6 +9,7 @@ Rails.application.routes.draw do
   resources :leads do
     member do
       post :qualify
+      post :requalify
     end
   end
   resources :lead_qualifications, only: [ :index, :show ]

@@ -90,6 +90,11 @@
             <i class="bi bi-exclamation-circle me-2"></i>
             <strong>Erro:</strong> <%= @qualification.error_message %>
           </div>
+          <% if @qualification.status_unclassified? || @qualification.status_failed? %>
+            <%= link_to requalify_lead_path(@qualification.lead), method: :post, class: "btn btn-sm btn-outline-warning mt-2", data: { confirm: "Deseja reprocessar a qualificação deste lead?" } do %>
+              <i class="bi bi-arrow-repeat me-1"></i> Reprocessar
+            <% end %>
+          <% end %>
         <% end %>
       </div>
     </div>

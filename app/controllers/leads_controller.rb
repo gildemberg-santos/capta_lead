@@ -55,6 +55,18 @@ class LeadsController < ApplicationController
     end
   end
 
+  def requalify
+    @lead = Lead.find(params[:id])
+
+    reprocessado = Qualification::Enqueuer.retry!(@lead)
+
+    if reprocessado
+      redirect_to lead_path(@lead), notice: "Qualificação reenfileirada com sucesso. Aguarde o processamento."
+    else
+      redirect_to lead_path(@lead), alert: "Não foi possível reprocessar a qualificação deste lead. Verifique se o recurso está ativado para a empresa ou se há uma qualificação com erro para reprocessar."
+    end
+  end
+
   private
 
   def lead_params

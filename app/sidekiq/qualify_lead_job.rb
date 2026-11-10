@@ -7,7 +7,7 @@ class QualifyLeadJob
 
   sidekiq_retries_exhausted do |job, _exception|
     LeadQualification.where(lead_id: job["args"].first).update_all(
-      status: "unclassified",
+      status: "failed",
       score: nil,
       confidence: nil,
       error_message: "serviço de inferência indisponível",
