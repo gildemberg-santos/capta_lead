@@ -269,7 +269,8 @@ Após iniciar o servidor (`bundle exec rails server`), acesse **http://localhost
 | **Leads** | `/leads` | Listagem com status da qualificação e score; botão "Qualificar" para enfileirar job Sidekiq |
 | **Novo Lead** | `/leads/new` | Formulário com seleção de empresa, modo demo e campos dinâmicos do formulário de captação |
 | **Editar Lead** | `/leads/:id/edit` | Editar lead e seus campos de formulário |
-| **Ver Lead** | `/leads/:id` | Detalhe do lead com snapshot de qualificação |
+| **Ver Lead** | `/leads/:id` | Detalhe do lead com snapshot de qualificação e botão "Reprocessar" |
+| **Reprocessar Lead** | `POST /leads/:id/requalify` | Re-enfileira qualquer qualificação existente (volta para pending) |
 | **Qualificações** | `/lead_qualifications` | Lista completa de todas as avaliações IA com status, score, confiança e modelo |
 | **Ver Qualificação** | `/lead_qualifications/:id` | Detalhe da qualificação com snapshots de respostas e critérios |
 

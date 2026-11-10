@@ -180,7 +180,7 @@ Os testes usam **WebMock** para simular chamadas ao Ollama — não é necessár
 
 ### LeadQualifications
 - `lead` (belongs_to, index único)
-- `status` (enum: pending, qualified, not_qualified, unclassified)
+- `status` (enum: pending, qualified, not_qualified, unclassified, failed)
 - `score` (decimal, 4,3)
 - `confidence` (string: high/medium/low)
 - `model_version` (string)
@@ -200,7 +200,7 @@ Os testes usam **WebMock** para simular chamadas ao Ollama — não é necessár
 | **OllamaClient** | Chama API `/v1/systemone` do Tev1, valida resposta 0-1, distingue TransientError vs InvalidResponse | `ollama_client.rb` |
 | **Interpreter** | Converte nota (probabilidade) em status + confiança por distância do limiar | `interpreter.rb` |
 | **Evaluator** | Orquestra: sanitiza → chama modelo → interpreta → grava com upsert | `evaluator.rb` |
-| **Enqueuer** | Feature flag (Flipper), idempotência, cria qualificação pendente + enfileira job | `enqueuer.rb` |
+| **Enqueuer** | Feature flag (Flipper), idempotência, cria qualificação pendente + enfileira job; `reprocess!` re-enfileira qualquer qualificação existente | `enqueuer.rb` |
 | **Metrics** | Matriz de confusão, acurácia, precisão, recall, Brier score, calibração por faixa | `metrics.rb` |
 
 ### Fluxo de Qualificação
@@ -224,7 +224,7 @@ Lead criado → Enqueuer.call(lead) →
 
 - Fila: `low`
 - Retry: 3
-- `sidekiq_retries_exhausted`: marca lead como `unclassified` com erro "serviço de inferência indisponível"
+- `sidekiq_retries_exhausted`: marca lead como `failed` com erro "serviço de inferência indisponível"
 - Connexão Redis via `REDIS_URL` env var
 
 ---
@@ -395,6 +395,8 @@ bundle exec sidekiq -q low -q default -L log/sidekiq.log
 | Novo Lead | `/leads/new` | Formulário com campos dinâmicos |
 | Editar Lead | `/leads/:id/edit` | Editar lead |
 | Ver Lead | `/leads/:id` | Detalhe lead + snapshot qualificação |
+| Qualificar Lead | `POST /leads/:id/qualify` | Enfileira qualificação inicial |
+| Reprocessar Lead | `POST /leads/:id/requalify` | Re-enfileira qualquer qualificação existente |
 | Qualificações | `/lead_qualifications` | Lista todas as qualificações IA |
 | Ver Qualificação | `/lead_qualifications/:id` | Detalhe qualificação + snapshots |
 
