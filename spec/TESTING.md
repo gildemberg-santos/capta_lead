@@ -10,7 +10,7 @@ Guia de convenções e práticas de teste no projeto CaptaLead.
 - **Simulação de HTTP:** WebMock (não chama o Ollama real nos testes)
 - **Fixtures:** FactoryBot
 - **Banco de dados:** PostgreSQL com transações (rollback após cada teste)
-- **Total:** 28 exemplos, 0 falhas
+- **Total:** 57 exemplos, 0 falhas
 
 ---
 
@@ -20,8 +20,14 @@ Guia de convenções e práticas de teste no projeto CaptaLead.
 spec/
 ├── factories/
 │   ├── companies.rb          # Factory para Company
+│   ├── field_sets.rb         # Factory para FieldSet
 │   ├── leads.rb              # Factory para Lead
 │   └── lead_qualifications.rb # Factory para LeadQualification
+├── models/
+│   └── field_set_spec.rb     # Validações e fields_json do FieldSet
+├── requests/
+│   ├── field_sets_spec.rb    # CRUD nested de conjuntos de campos
+│   └── leads_form_spec.rb    # Renderização do seletor de conjuntos
 ├── services/qualification/
 │   ├── answer_sanitizer_spec.rb      # Filtro LGPD
 │   ├── ollama_client_spec.rb         # Cliente Ollama (WebMock)

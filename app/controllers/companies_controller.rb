@@ -11,6 +11,7 @@ class CompaniesController < ApplicationController
   def show
     @leads = @company.leads.order(created_at: :desc)
     @qualifications = @company.lead_qualifications.includes(:lead).order(created_at: :desc)
+    @field_sets = @company.field_sets.order(:name)
   end
 
   def new

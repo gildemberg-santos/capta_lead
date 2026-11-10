@@ -5,7 +5,9 @@ Rails.application.routes.draw do
 
   get "dashboard", to: "dashboard#index"
 
-  resources :companies
+  resources :companies do
+    resources :field_sets, except: %i[index show]
+  end
   resources :leads do
     member do
       post :qualify

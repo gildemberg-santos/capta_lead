@@ -2,6 +2,7 @@ class Company < ApplicationRecord
   include Flipper::Identifier
 
   has_many :leads, dependent: :destroy
+  has_many :field_sets, dependent: :destroy
   has_many :lead_qualifications, through: :leads
 
   DEFAULT_CRITERIA = {

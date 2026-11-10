@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_11_10_143334) do
+ActiveRecord::Schema[7.1].define(version: 2026_11_10_190000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -21,6 +21,15 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_10_143334) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_companies_on_name", unique: true
+  end
+
+  create_table "field_sets", force: :cascade do |t|
+    t.bigint "company_id", null: false
+    t.string "name", null: false
+    t.jsonb "fields", default: [], null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["company_id", "name"], name: "index_field_sets_on_company_id_and_name", unique: true
   end
 
   create_table "flipper_features", force: :cascade do |t|
@@ -63,6 +72,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_11_10_143334) do
     t.index ["company_id"], name: "index_leads_on_company_id"
   end
 
+  add_foreign_key "field_sets", "companies"
   add_foreign_key "lead_qualifications", "leads"
   add_foreign_key "leads", "companies"
 end

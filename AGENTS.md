@@ -20,6 +20,7 @@ capta_lead/
 │   ├── controllers/
 │   │   ├── application_controller.rb
 │   │   ├── companies_controller.rb      # CRUD empresas + critérios IA
+│   │   ├── field_sets_controller.rb     # CRUD conjuntos de campos (nested em empresa)
 │   │   ├── dashboard_controller.rb      # métricas, calibração, status Ollama
 │   │   ├── lead_qualifications_controller.rb  # listagem/detalhe qualificações
 │   │   └── leads_controller.rb          # CRUD leads + formulário dinâmico + qualificar
@@ -31,6 +32,7 @@ capta_lead/
 │   ├── models/
 │   │   ├── application_record.rb
 │   │   ├── company.rb                   # Flipper::Identifier, DEFAULT_CRITERIA, validação JSON
+│   │   ├── field_set.rb                 # conjunto reutilizável de campos da empresa
 │   │   ├── lead.rb                      # validação form_fields, campos pessoais vs negócio
 │   │   └── lead_qualification.rb        # enum status, snapshots jsonb
 │   ├── services/qualification/
@@ -44,6 +46,7 @@ capta_lead/
 │   │   └── jsonb_schema_validator.rb    # valida critérios JSON (chaves obrigatórias, threshold 0-1)
 │   ├── views/
 │   │   ├── companies/                   # index, new, edit, show, _criteria
+│   │   ├── field_sets/                  # new, edit, _form (conjuntos de campos)
 │   │   ├── dashboard/                   # index (cards, métricas, calibração, Ollama)
 │   │   ├── leads/                       # index, new, edit, show, _form_fields, _form_fields_field
 │   │   ├── lead_qualifications/         # index, show
@@ -60,14 +63,21 @@ capta_lead/
 │   │   ├── 20261110000001_create_leads.rb
 │   │   ├── 20261110000002_create_lead_qualifications.rb
 │   │   ├── 20261110000003_add_qualification_criteria_to_companies.rb
-│   │   └── 20261110143334_create_flipper_tables.rb
+│   │   ├── 20261110143334_create_flipper_tables.rb
+│   │   └── 20261110190000_create_field_sets.rb
 │   ├── schema.rb
-│   └── seeds.rb                         # 3 empresas, 11 leads, 9 qualificações
+│   └── seeds.rb                         # 3 empresas, 11 leads, 10 qualificações, 4 conjuntos
 ├── spec/
 │   ├── factories/
 │   │   ├── companies.rb
+│   │   ├── field_sets.rb
 │   │   ├── leads.rb
 │   │   └── lead_qualifications.rb
+│   ├── models/
+│   │   └── field_set_spec.rb
+│   ├── requests/
+│   │   ├── field_sets_spec.rb
+│   │   └── leads_form_spec.rb
 │   ├── services/qualification/
 │   │   ├── answer_sanitizer_spec.rb
 │   │   ├── ollama_client_spec.rb
@@ -150,7 +160,7 @@ Acesse: **http://localhost:3000/**
 ```bash
 cd /home/gildembergsantos/Documentos/capta_lead
 
-# Suíte completa (28 exemplos, 0 falhas)
+# Suíte completa (57 exemplos, 0 falhas)
 DATABASE_HOST=localhost DATABASE_PORT=5432 DATABASE_USERNAME=postgres DATABASE_PASSWORD=postgres REDIS_URL=redis://localhost:6379/0 bundle exec rspec
 
 # Arquivo específico
@@ -170,7 +180,14 @@ Os testes usam **WebMock** para simular chamadas ao Ollama — não é necessár
 - `name` (string, unique)
 - `demo` (boolean, default: false)
 - `qualification_criteria` (jsonb, default: `{}`)
-- has_many :leads, has_many :lead_qualifications (through: leads)
+- has_many :leads, has_many :field_sets, has_many :lead_qualifications (through: leads)
+
+### FieldSets
+- `company` (belongs_to)
+- `name` (string, único por `company_id`)
+- `fields` (jsonb, default: `[]`) — array de `{label, type}`, sem valores
+- `fields_json` (virtual) — textarea JSON usada no formulário de cadastro
+- Reutilizável no formulário de lead: aplica vários conjuntos, sem vínculo persistido lead↔conjunto
 
 ### Leads
 - `company` (belongs_to)
@@ -391,7 +408,9 @@ bundle exec sidekiq -q low -q default -L log/sidekiq.log
 | Empresas | `/companies` | CRUD empresas + critérios IA |
 | Nova Empresa | `/companies/new` | Formulário criação empresa |
 | Editar Empresa | `/companies/:id/edit` | Editar empresa e critérios |
-| Ver Empresa | `/companies/:id` | Detalhe empresa + leads |
+| Ver Empresa | `/companies/:id` | Detalhe empresa + leads + conjuntos de campos |
+| Novo Conjunto | `/companies/:company_id/field_sets/new` | Criar conjunto de campos reutilizável |
+| Editar Conjunto | `/companies/:company_id/field_sets/:id/edit` | Editar nome e campos do conjunto |
 | Leads | `/leads` | Listagem leads + botão Qualificar |
 | Novo Lead | `/leads/new` | Formulário com campos dinâmicos |
 | Editar Lead | `/leads/:id/edit` | Editar lead |
@@ -412,7 +431,8 @@ bundle exec rails db:seed
 Cria:
 - 3 empresas: Contábil Norte, Tech Solutions LTDA, Empresa Demo
 - 11 leads com diferentes perfis (qualificado, não qualificado, pendente, demo)
-- 9 qualificações já processadas com scores variados
+- 10 qualificações já processadas com scores variados
+- 4 conjuntos de campos (2 na Contábil Norte, 1 na Tech Solutions, 1 na Empresa Demo)
 - Feature flags ativas para Contábil Norte e Tech Solutions
 
 ---
@@ -432,7 +452,7 @@ Cria:
 
 ## ⚠️ Antes de Fazer Push
 
-1. Execute `bundle exec rspec` — deve passar 28/28
+1. Execute `bundle exec rspec` — deve passar 57/57
 2. Execute `code-reviewer` para revisão de segurança
 3. Verifique que não há dados sensíveis em `.env` (está no .gitignore)
 4. **Atualize a documentação se mudou algo significativo** (veja abaixo)
@@ -460,7 +480,7 @@ Sempre que houver alteração nas seguintes áreas, atualize o(s) documento(s) c
 ### Checklist de Verificação (antes de cada push)
 
 ```markdown
-- [ ] Testes passam: `bundle exec rspec` (28/28)
+- [ ] Testes passam: `bundle exec rspec` (57/57)
 - [ ] Documentação reflete mudanças no código
 - [ ] Estrutura de diretórios em `AGENTS.md` e `README.md` está atualizada
 - [ ] Tabela de URLs no `README.md` reflete todas as rotas ativas

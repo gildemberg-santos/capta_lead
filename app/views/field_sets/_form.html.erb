@@ -1,0 +1,38 @@
+<% if @field_set.errors.any? %>
+  <div class="alert alert-danger mb-4">
+    <i class="bi bi-exclamation-circle me-2"></i>
+    <strong><%= pluralize(@field_set.errors.count, "erro") %> impediu que este conjunto fosse salvo:</strong>
+    <ul class="mb-0 mt-2">
+      <% @field_set.errors.each do |error| %>
+        <li><%= error.full_message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<div class="row mb-4">
+  <div class="col-md-8">
+    <%= f.label :name, "Nome do conjunto", class: "form-label fw-bold" %>
+    <%= f.text_field :name, class: "form-control", placeholder: "Ex: Contabilidade — Padrão" %>
+    <p class="form-text text-muted small">Um nome para identificar o conjunto (único por empresa).</p>
+  </div>
+</div>
+
+<div class="mb-4">
+  <%= f.label :fields_json, "Campos (JSON)", class: "form-label fw-bold" %>
+  <%= f.text_area :fields_json, rows: 10, class: "form-control font-monospace",
+        placeholder: '[
+  { "label": "Quantos funcionários?", "type": "select" },
+  { "label": "Melhor contato", "type": "phone" },
+  { "label": "Conte sua necessidade", "type": "textarea" }
+]' %>
+  <p class="form-text text-muted small">
+    Informe um array JSON. Cada item precisa de <code>label</code> e <code>type</code>.
+    Tipos aceitos: text, select, phone, whatsapp, email, cpf, cnpj, address, textarea, password.
+  </p>
+</div>
+
+<div class="d-flex justify-content-between mt-5 pt-4 border-top">
+  <%= link_to "Voltar", company_path(@company), class: "btn btn-outline-secondary" %>
+  <%= f.submit submit_label, class: "btn btn-primary px-4" %>
+</div>

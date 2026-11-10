@@ -14,6 +14,7 @@ Uma plataforma SaaS de captação de leads feita em Ruby on Rails que usa um mod
 6. **Job Sidekiq** — processamento assíncrono com retry e tratamento de erros
 7. **Testes RSpec** — coberta com WebMock (não chama a IA nos testes de unidade)
 8. **Métricas** — precisão, recall, acurácia, Brier score e calibração
+9. **Conjuntos de campos** — cada empresa tem conjuntos reutilizáveis que agilizam o preenchimento dos leads
 
 ## Estrutura do projeto
 
@@ -23,6 +24,7 @@ capta_lead/
 │   ├── controllers/
 │   │   ├── application_controller.rb
 │   │   ├── companies_controller.rb      # CRUD empresas + critérios IA
+│   │   ├── field_sets_controller.rb     # CRUD conjuntos de campos (nested em empresa)
 │   │   ├── dashboard_controller.rb      # métricas, calibração, status Ollama
 │   │   ├── lead_qualifications_controller.rb  # listagem e detalhe qualificações
 │   │   └── leads_controller.rb          # CRUD leads + formulário dinâmico + qualificar
@@ -34,6 +36,7 @@ capta_lead/
 │   ├── models/
 │   │   ├── application_record.rb
 │   │   ├── company.rb                   # Flipper::Identifier, DEFAULT_CRITERIA (BANT), validação JSON
+│   │   ├── field_set.rb                 # conjunto reutilizável de campos (name + fields jsonb)
 │   │   ├── lead.rb                      # validação form_fields, campos pessoais vs negócio
 │   │   └── lead_qualification.rb        # enum status, snapshots jsonb
 │   ├── services/qualification/
@@ -47,6 +50,7 @@ capta_lead/
 │   │   └── jsonb_schema_validator.rb    # valida critérios JSON (chaves obrigatórias, threshold 0-1)
 │   ├── views/
 │   │   ├── companies/                   # index, new, edit, show, _criteria
+│   │   ├── field_sets/                  # new, edit, _form (conjuntos de campos)
 │   │   ├── dashboard/                   # index (cards, métricas, calibração, Ollama)
 │   │   ├── leads/                       # index, new, edit, show, _form_fields, _form_fields_field
 │   │   ├── lead_qualifications/         # index, show
@@ -62,9 +66,19 @@ capta_lead/
 │   ├── 20261110000001_create_leads.rb
 │   ├── 20261110000002_create_lead_qualifications.rb
 │   ├── 20261110000003_add_qualification_criteria_to_companies.rb
-│   └── 20261110143334_create_flipper_tables.rb
+│   ├── 20261110143334_create_flipper_tables.rb
+│   └── 20261110190000_create_field_sets.rb
 ├── spec/
 │   ├── factories/
+│   │   ├── companies.rb
+│   │   ├── field_sets.rb
+│   │   ├── leads.rb
+│   │   └── lead_qualifications.rb
+│   ├── models/
+│   │   └── field_set_spec.rb
+│   ├── requests/
+│   │   ├── field_sets_spec.rb
+│   │   └── leads_form_spec.rb
 │   ├── services/qualification/
 │   │   ├── answer_sanitizer_spec.rb
 │   │   ├── ollama_client_spec.rb
@@ -188,7 +202,7 @@ bundle exec rspec
 Os testes simulam chamadas HTTP ao Ollama com WebMock (host `http://ollama.test`), então não é necessário ter o modelo rodando para executar a suíte.
 
 ```bash
-# 28 examples, 0 failures
+# 57 examples, 0 failures
 ```
 
 ## Relatório de métricas
@@ -255,6 +269,27 @@ Exemplo de JSON gerado:
 ]
 ```
 
+## Conjuntos de Campos por Empresa (Field Sets)
+
+Cada empresa pode cadastrar **conjuntos de campos reutilizáveis** em `/companies/:id`. Um conjunto guarda apenas `name` e a lista de `fields` (`label` + `type`); os valores continuam sendo preenchidos em cada lead.
+
+No formulário de lead, o seletor **"Conjuntos de campos da empresa"**:
+
+- filtra os conjuntos pela empresa escolhida (`lead_company_id`);
+- aplica o conjunto no formulário, adicionando os campos de uma vez;
+- ignora labels que já existem, evitando duplicidade;
+- permite aplicar mais de um conjunto no mesmo lead.
+
+Exemplo de `fields`:
+
+```json
+[
+  { "label": "Quantos funcionários?", "type": "select" },
+  { "label": "Melhor contato", "type": "phone" },
+  { "label": "Conte sua necessidade", "type": "textarea" }
+]
+```
+
 ## Acesso à aplicação
 
 Após iniciar o servidor (`bundle exec rails server`), acesse **http://localhost:3000/**:
@@ -265,7 +300,9 @@ Após iniciar o servidor (`bundle exec rails server`), acesse **http://localhost
 | **Empresas** | `/companies` | CRUD completo: criar, editar, excluir empresas e gerenciar critérios de qualificação IA |
 | **Nova Empresa** | `/companies/new` | Formulário com nome, modo demo e critérios (instruções, qualificado, não qualificado, limiar) |
 | **Editar Empresa** | `/companies/:id/edit` | Editar empresa e critérios de qualificação |
-| **Ver Empresa** | `/companies/:id` | Detalhe da empresa e seus leads |
+| **Ver Empresa** | `/companies/:id` | Detalhe da empresa, seus leads e conjuntos de campos |
+| **Novo Conjunto de Campos** | `/companies/:company_id/field_sets/new` | Cria um conjunto reutilizável (nome + fields em JSON) |
+| **Editar Conjunto de Campos** | `/companies/:company_id/field_sets/:id/edit` | Edita nome e campos do conjunto |
 | **Leads** | `/leads` | Listagem com status da qualificação e score; botão "Qualificar" para enfileirar job Sidekiq |
 | **Novo Lead** | `/leads/new` | Formulário com seleção de empresa, modo demo e campos dinâmicos do formulário de captação |
 | **Editar Lead** | `/leads/:id/edit` | Editar lead e seus campos de formulário |
@@ -329,7 +366,7 @@ Para garantir que a documentação esteja sempre alinhada com o código, atualiz
 
 ### Checklist antes de Push
 
-- [ ] `bundle exec rspec` passa (28/28)
+- [ ] `bundle exec rspec` passa (57/57)
 - [ ] Documentação reflete mudanças no código
 - [ ] Estrutura de diretórios em `AGENTS.md` e `README.md` está atualizada
 - [ ] Tabela de URLs no `README.md` reflete todas as rotas ativas

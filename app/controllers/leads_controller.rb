@@ -9,7 +9,7 @@ class LeadsController < ApplicationController
 
   def new
     @lead = Lead.new
-    @companies = Company.order(:name)
+    load_form_collections
   end
 
   def create
@@ -17,14 +17,14 @@ class LeadsController < ApplicationController
     if @lead.save
       redirect_to leads_path, notice: "Lead criado com sucesso."
     else
-      @companies = Company.order(:name)
+      load_form_collections
       render :new, status: :unprocessable_entity
     end
   end
 
   def edit
     @lead = Lead.find(params[:id])
-    @companies = Company.order(:name)
+    load_form_collections
   end
 
   def update
@@ -32,7 +32,7 @@ class LeadsController < ApplicationController
     if @lead.update(lead_params_with_fields)
       redirect_to lead_path(@lead), notice: "Lead atualizado com sucesso."
     else
-      @companies = Company.order(:name)
+      load_form_collections
       render :edit, status: :unprocessable_entity
     end
   end
@@ -68,6 +68,11 @@ class LeadsController < ApplicationController
   end
 
   private
+
+  def load_form_collections
+    @companies = Company.order(:name)
+    @field_sets = FieldSet.order(:name)
+  end
 
   def lead_params
     params.require(:lead).permit(:company_id, form_fields_attributes: [:id, :label, :type, :value, :_destroy])

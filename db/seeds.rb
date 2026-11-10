@@ -37,7 +37,62 @@ end
 puts "   Empresas criadas: #{Company.count}"
 
 # ---------------------------------------------------------------------------
-# 2. Leads da Contábil Norte (com qualificações já processadas)
+# 2. Conjuntos de campos (field sets) reutilizáveis por empresa
+# ---------------------------------------------------------------------------
+
+field_sets = {
+  contabil_norte => [
+    {
+      name: "Contabilidade — Padrão",
+      fields: [
+        { "label" => "Quantos funcionários?", "type" => "select" },
+        { "label" => "Quando pretende contratar?", "type" => "select" },
+        { "label" => "Melhor contato", "type" => "phone" },
+        { "label" => "Conte sua necessidade", "type" => "textarea" }
+      ]
+    },
+    {
+      name: "Contato rápido",
+      fields: [
+        { "label" => "Melhor contato", "type" => "phone" },
+        { "label" => "Conte sua necessidade", "type" => "textarea" }
+      ]
+    }
+  ],
+  tech_solutions => [
+    {
+      name: "Software de Gestão — Padrão",
+      fields: [
+        { "label" => "Quantos funcionários?", "type" => "select" },
+        { "label" => "Quando pretende contratar?", "type" => "select" },
+        { "label" => "Melhor contato", "type" => "phone" },
+        { "label" => "Conte sua necessidade", "type" => "textarea" }
+      ]
+    }
+  ],
+  demo_empresa => [
+    {
+      name: "Dados básicos",
+      fields: [
+        { "label" => "Quantos funcionários?", "type" => "select" },
+        { "label" => "Quando pretende contratar?", "type" => "select" }
+      ]
+    }
+  ]
+}
+
+field_sets.each do |company, sets|
+  sets.each do |attrs|
+    company.field_sets.find_or_create_by!(name: attrs[:name]) do |field_set|
+      field_set.fields = attrs[:fields]
+    end
+  end
+end
+
+puts "   Conjuntos de campos criados: #{FieldSet.count}"
+
+# ---------------------------------------------------------------------------
+# 3. Leads da Contábil Norte (com qualificações já processadas)
 # ---------------------------------------------------------------------------
 
 leads_contabil = [
@@ -119,7 +174,8 @@ leads_contabil = [
 ]
 
 leads_contabil.each_with_index do |attrs, idx|
-  lead = contabil_norte.leads.create!(form_fields: attrs[:form_fields])
+  lead = contabil_norte.leads.find_by("form_fields = ?::jsonb", attrs[:form_fields].to_json) ||
+         contabil_norte.leads.create!(form_fields: attrs[:form_fields])
 
   answers_snapshot = Qualification::AnswerSanitizer.call(attrs[:form_fields])
 
@@ -137,7 +193,7 @@ leads_contabil.each_with_index do |attrs, idx|
 end
 
 # ---------------------------------------------------------------------------
-# 3. Leads da Tech Solutions (mix de status)
+# 4. Leads da Tech Solutions (mix de status)
 # ---------------------------------------------------------------------------
 
 leads_tech = [
@@ -180,7 +236,8 @@ leads_tech = [
 ]
 
 leads_tech.each_with_index do |attrs, idx|
-  lead = tech_solutions.leads.create!(form_fields: attrs[:form_fields])
+  lead = tech_solutions.leads.find_by("form_fields = ?::jsonb", attrs[:form_fields].to_json) ||
+         tech_solutions.leads.create!(form_fields: attrs[:form_fields])
 
   answers_snapshot = Qualification::AnswerSanitizer.call(attrs[:form_fields])
 
@@ -198,27 +255,29 @@ leads_tech.each_with_index do |attrs, idx|
 end
 
 # ---------------------------------------------------------------------------
-# 4. Leads pendentes (sem qualificação ainda — para testar o botão "Qualificar")
+# 5. Leads pendentes (sem qualificação ainda — para testar o botão "Qualificar")
 # ---------------------------------------------------------------------------
 
-lead_pendente = contabil_norte.leads.create!(
-  form_fields: [
-    { "label" => "Quantos funcionários?", "type" => "select", "value" => "De 11 a 50" },
-    { "label" => "Quando pretende contratar?", "type" => "select", "value" => "Nos próximos 30 dias" },
-    { "label" => "Melhor contato", "type": "phone", "value": "(11) 91111-2222" },
-    { "label" => "Conte sua necessidade", "type": "textarea", "value": "Quero contratar contabilidade urgentemente." }
-  ]
-)
+lead_pendente_fields = [
+  { "label" => "Quantos funcionários?", "type" => "select", "value" => "De 11 a 50" },
+  { "label" => "Quando pretende contratar?", "type" => "select", "value" => "Nos próximos 30 dias" },
+  { "label" => "Melhor contato", "type" => "phone", "value" => "(11) 91111-2222" },
+  { "label" => "Conte sua necessidade", "type" => "textarea", "value" => "Quero contratar contabilidade urgentemente." }
+]
 
-lead_demo = demo_empresa.leads.create!(
-  form_fields: [
-    { "label" => "Quantos funcionários?", "type" => "select", "value" => "De 1 a 10" },
-    { "label" => "Quando pretende contratar?", "type" => "select", "value" => "Nos próximos 30 dias" }
-  ]
-)
+lead_pendente = contabil_norte.leads.find_by("form_fields = ?::jsonb", lead_pendente_fields.to_json) ||
+                contabil_norte.leads.create!(form_fields: lead_pendente_fields)
+
+lead_demo_fields = [
+  { "label" => "Quantos funcionários?", "type" => "select", "value" => "De 1 a 10" },
+  { "label" => "Quando pretende contratar?", "type" => "select", "value" => "Nos próximos 30 dias" }
+]
+
+lead_demo = demo_empresa.leads.find_by("form_fields = ?::jsonb", lead_demo_fields.to_json) ||
+            demo_empresa.leads.create!(form_fields: lead_demo_fields)
 
 # ---------------------------------------------------------------------------
-# 5. Ativar feature flag para as empresas reais
+# 6. Ativar feature flag para as empresas reais
 # ---------------------------------------------------------------------------
 
 Flipper.enable_actor(:lead_qualification, contabil_norte)
@@ -229,6 +288,7 @@ Flipper.enable_actor(:lead_qualification, tech_solutions)
 # ---------------------------------------------------------------------------
 
 puts "   Leads criados: #{Lead.count}"
+puts "   Conjuntos de campos: #{FieldSet.count}"
 puts "   Qualificações criadas: #{LeadQualification.count}"
 puts "   Qualificados: #{LeadQualification.where(status: 'qualified').count}"
 puts "   Não qualificados: #{LeadQualification.where(status: 'not_qualified').count}"

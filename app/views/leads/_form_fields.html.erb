@@ -11,6 +11,23 @@
       <code>cnpj</code> ou <code>address</code> serão automaticamente sanitizados antes de enviar ao modelo IA (LGPD).
     </p>
 
+    <div id="field-sets-picker" class="mb-4 p-3 border rounded bg-white"
+         data-field-sets="<%= Array(@field_sets).map { |fs| { id: fs.id, name: fs.name, company_id: fs.company_id, fields: fs.fields_array } }.to_json %>">
+      <label class="form-label small fw-bold">
+        <i class="bi bi-collection me-1"></i>Conjuntos de campos da empresa
+      </label>
+      <div class="d-flex gap-2">
+        <select id="field-set-select" class="form-select form-select-sm"></select>
+        <button type="button" id="apply-field-set" class="btn btn-outline-primary btn-sm text-nowrap">
+          <i class="bi bi-plus-square me-1"></i> Aplicar conjunto
+        </button>
+      </div>
+      <p class="form-text text-muted small mb-0 mt-2">
+        Aplique um conjunto para adicionar os campos do formulário de uma vez.
+        Os valores continuam sendo preenchidos neste lead.
+      </p>
+    </div>
+
     <div id="fields-container">
       <% if @lead.form_fields_array.any? %>
         <% @lead.form_fields_array.each_with_index do |field, idx| %>
