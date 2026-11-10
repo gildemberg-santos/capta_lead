@@ -11,7 +11,7 @@ module Qualification
 
     def initialize(url: ENV.fetch("OLLAMA_URL", "http://localhost:11434"),
                    model: ENV.fetch("QUALIFICATION_MODEL", "tev1:4b"),
-                   timeout: 30)
+                   timeout: Integer(ENV.fetch("OLLAMA_TIMEOUT", "120")))
       @uri = URI.join(url, "/v1/systemone")
       @model = model
       @timeout = timeout

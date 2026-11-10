@@ -128,6 +128,11 @@ Qualification::AnswerSanitizer.call([
 - `TransientError`: serviço fora do ar, timeout, 5xx → pode retry
 - `InvalidResponse`: erro 4xx, resposta fora do formato, noul ausente, fora de 0-1 → não retry
 
+**Configuração:**
+- `OLLAMA_URL` (default `http://localhost:11434`)
+- `OLLAMA_TIMEOUT` (default `120` segundos — a primeira carga do modelo pode demorar)
+- `QUALIFICATION_MODEL` (default `tev1:4b`)
+
 **Defesas:**
 - Dados do lead vão em `state`, pergunta/critérios em `questions` (separação contra injeção de prompt)
 - Validação de intervalo 0–1 feita no Ruby
