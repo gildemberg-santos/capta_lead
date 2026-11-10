@@ -1,3 +1,6 @@
+# frozen_string_literal: true
+
+# Controller responsável pela listagem e detalhe das qualificações de leads geradas pela IA.
 class LeadQualificationsController < ApplicationController
   def index
     @qualifications = LeadQualification
