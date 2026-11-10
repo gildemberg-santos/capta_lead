@@ -84,6 +84,12 @@ capta_lead/
 │   └── ollama_check                     # valida Ollama local e modelo Tev1
 ├── public/javascripts/
 │   └── lead_form_controller.js          # JS de campos dinâmicos (cópia para uso direto)
+├── docs/
+│   ├── ARCHITECTURE.md                  # decisões de arquitetura
+│   ├── DEPLOY.md                        # deploy em produção
+│   └── LGPD.md                          # proteção de dados pessoais
+├── app/services/qualification/README.md # documentação dos serviços de IA
+├── spec/TESTING.md                      # convenções de teste
 ├── .env.example
 ├── Gemfile
 └── README.md
@@ -258,9 +264,14 @@ Após iniciar o servidor (`bundle exec rails server`), acesse **http://localhost
 | **Dashboard** | `/dashboard` | Visão geral: cards de estatísticas, barras de progresso, métricas de desempenho, calibração, status do Ollama |
 | **Empresas** | `/companies` | CRUD completo: criar, editar, excluir empresas e gerenciar critérios de qualificação IA |
 | **Nova Empresa** | `/companies/new` | Formulário com nome, modo demo e critérios (instruções, qualificado, não qualificado, limiar) |
+| **Editar Empresa** | `/companies/:id/edit` | Editar empresa e critérios de qualificação |
+| **Ver Empresa** | `/companies/:id` | Detalhe da empresa e seus leads |
 | **Leads** | `/leads` | Listagem com status da qualificação e score; botão "Qualificar" para enfileirar job Sidekiq |
 | **Novo Lead** | `/leads/new` | Formulário com seleção de empresa, modo demo e campos dinâmicos do formulário de captação |
+| **Editar Lead** | `/leads/:id/edit` | Editar lead e seus campos de formulário |
+| **Ver Lead** | `/leads/:id` | Detalhe do lead com snapshot de qualificação |
 | **Qualificações** | `/lead_qualifications` | Lista completa de todas as avaliações IA com status, score, confiança e modelo |
+| **Ver Qualificação** | `/lead_qualifications/:id` | Detalhe da qualificação com snapshots de respostas e critérios |
 
 ## Principais decisões de projeto
 

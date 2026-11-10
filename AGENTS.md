@@ -88,6 +88,12 @@ capta_lead/
 │   └── ollama_check                     # valida Ollama local + modelo tev1:4b
 ├── public/javascripts/
 │   └── lead_form_controller.js          # JS de campos dinâmicos
+├── docs/
+│   ├── ARCHITECTURE.md                  # decisões de arquitetura
+│   ├── DEPLOY.md                        # deploy em produção
+│   └── LGPD.md                          # proteção de dados pessoais
+├── app/services/qualification/README.md # documentação dos serviços de IA
+├── spec/TESTING.md                      # convenções de teste
 ├── .env.example
 ├── Gemfile
 ├── README.md
