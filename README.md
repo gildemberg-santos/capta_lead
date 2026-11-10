@@ -309,3 +309,29 @@ Conforme o tutorial, antes de usar com clientes reais:
 ## Licença
 
 Projeto fictício para fins educacionais.
+
+---
+
+## 📚 Manutenção da Documentação
+
+Para garantir que a documentação esteja sempre alinhada com o código, atualize o(s) documento(s) correspondente(s) sempre que fizer alterações significativas:
+
+| Alteração | Documento a Atualizar |
+|-----------|----------------------|
+| Novo modelo, migração, campo | `AGENTS.md`, `README.md` |
+| Novo serviço ou alteração em IA | `app/services/qualification/README.md`, `AGENTS.md` |
+| Nova view, controller, rota | `AGENTS.md`, `README.md` (tabela de URLs) |
+| Nova regra de LGPD | `docs/LGPD.md` |
+| Mudança de deploy/Docker | `docs/DEPLOY.md` |
+| Mudança de arquitetura | `docs/ARCHITECTURE.md` |
+| Nova convenção de teste | `spec/TESTING.md` |
+
+### Checklist antes de Push
+
+- [ ] `bundle exec rspec` passa (28/28)
+- [ ] Documentação reflete mudanças no código
+- [ ] Estrutura de diretórios em `AGENTS.md` e `README.md` está atualizada
+- [ ] Tabela de URLs no `README.md` reflete todas as rotas ativas
+- [ ] Nenhum dado sensível em `.env`
+
+Veja `AGENTS.md` para o guia completo de operação e manutenção.

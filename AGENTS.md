@@ -432,4 +432,50 @@ Cria:
 1. Execute `bundle exec rspec` — deve passar 28/28
 2. Execute `code-reviewer` para revisão de segurança
 3. Verifique que não há dados sensíveis em `.env` (está no .gitignore)
-4. Atualize `AGENTS.md` se mudar estrutura significativa
+4. **Atualize a documentação se mudou algo significativo** (veja abaixo)
+
+---
+
+## 📚 Manutenção Contínua da Documentação
+
+Para garantir que o projeto esteja sempre alinhado com sua documentação, siga estas regras:
+
+### Quando Atualizar a Documentação
+
+Sempre que houver alteração nas seguintes áreas, atualize o(s) documento(s) correspondente(s):
+
+| Alteração no Código | Documento a Atualizar |
+|---------------------|----------------------|
+| Novo modelo, migração ou campo | `AGENTS.md`, `README.md` |
+| Novo serviço ou alteração em `app/services/qualification/` | `app/services/qualification/README.md`, `AGENTS.md` |
+| Nova view, controller ou rota | `AGENTS.md`, `README.md` (tabela de URLs) |
+| Nova regra de LGPD ou sanitização | `docs/LGPD.md` |
+| Mudança de deploy, variáveis de ambiente, Docker | `docs/DEPLOY.md` |
+| Mudança de arquitetura ou decisões de design | `docs/ARCHITECTURE.md` |
+| Novo teste ou mudança de convenção de teste | `spec/TESTING.md` |
+
+### Checklist de Verificação (antes de cada push)
+
+```markdown
+- [ ] Testes passam: `bundle exec rspec` (28/28)
+- [ ] Documentação reflete mudanças no código
+- [ ] Estrutura de diretórios em `AGENTS.md` e `README.md` está atualizada
+- [ ] Tabela de URLs no `README.md` reflete todas as rotas ativas
+- [ ] Nenhum dado sensível em `.env` (está no .gitignore)
+- [ ] Referências cruzadas entre documentos estão consistentes
+```
+
+### Comando Rápido de Verificação
+
+```bash
+# Verificar se todos os arquivos listados no AGENTS.md existem
+cd /home/gildembergsantos/Documentos/capta_lead
+
+# Verificar rotas ativas vs documentadas
+bundle exec rails routes
+
+# Verificar se modelos correspondem à documentação
+bundle exec rails console
+```
+
+---
