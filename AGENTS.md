@@ -21,14 +21,11 @@ capta_lead/
 │   │   ├── application_controller.rb
 │   │   ├── companies_controller.rb      # CRUD empresas + critérios IA
 │   │   ├── field_sets_controller.rb     # CRUD conjuntos de campos (nested em empresa)
-│   │   ├── dashboard_controller.rb      # métricas, calibração, status Ollama
+│   │   ├── dashboard_controller.rb      # métricas, calibração e contadores
 │   │   ├── lead_qualifications_controller.rb  # listagem/detalhe qualificações
 │   │   └── leads_controller.rb          # CRUD leads + formulário dinâmico + qualificar
 │   ├── helpers/
 │   │   └── application_helper.rb        # lead_answer, criteria_value, preview_criteria
-│   ├── javascript/
-│   │   └── controllers/
-│   │       └── lead_form_controller.js  # campos dinâmicos, modo Visual/JSON
 │   ├── models/
 │   │   ├── application_record.rb
 │   │   ├── company.rb                   # Flipper::Identifier, DEFAULT_CRITERIA, validação JSON
@@ -62,11 +59,10 @@ capta_lead/
 │   │   ├── 20261110000000_create_companies.rb
 │   │   ├── 20261110000001_create_leads.rb
 │   │   ├── 20261110000002_create_lead_qualifications.rb
-│   │   ├── 20261110000003_add_qualification_criteria_to_companies.rb
 │   │   ├── 20261110143334_create_flipper_tables.rb
 │   │   └── 20261110190000_create_field_sets.rb
 │   ├── schema.rb
-│   └── seeds.rb                         # 3 empresas, 11 leads, 10 qualificações, 4 conjuntos
+│   └── seeds.rb                         # 3 empresas, 11 leads, 9 qualificações, 4 conjuntos
 ├── spec/
 │   ├── factories/
 │   │   ├── companies.rb
@@ -204,7 +200,7 @@ Os testes usam **WebMock** para simular chamadas ao Ollama — não é necessár
 - `answers_snapshot` (jsonb)
 - `criteria_snapshot` (jsonb)
 - `error_message` (string)
-- `outcome` (string: "won"/"lost", preenchido pelo time comercial)
+- `outcome` (string: "won"/"lost"; preenchido manualmente via console/seed — não há tela para isso)
 - `evaluated_at` (datetime)
 
 ---
@@ -223,7 +219,7 @@ Os testes usam **WebMock** para simular chamadas ao Ollama — não é necessár
 ### Fluxo de Qualificação
 
 ```
-Lead criado → Enqueuer.call(lead) → 
+Lead salvo → usuário aciona "Qualificar" (POST /leads/:id/qualify) → Enqueuer.call(lead) →
   Verifica demo? → Verifica Flipper.enabled? → Verifica idempotência → 
   Cria LeadQualification(status: pending) → QualifyLeadJob.perform_async → 
   Evaluator.new(lead).call → 
@@ -232,6 +228,8 @@ Lead criado → Enqueuer.call(lead) →
     Interpreter.call(probability, threshold) → 
     LeadQualification.upsert(...)
 ```
+
+O enfileiramento é manual: `LeadsController#create` apenas salva o lead. O botão "Qualificar" chama `qualify`; "Reprocessar" chama `requalify` (via `Enqueuer.reprocess!`).
 
 ---
 
@@ -404,7 +402,7 @@ bundle exec sidekiq -q low -q default -L log/sidekiq.log
 
 | Página | URL | Função |
 |--------|-----|--------|
-| Dashboard | `/dashboard` | Métricas, calibração, cards, status Ollama |
+| Dashboard | `/dashboard` | Métricas, calibração e contadores (o status do modelo é um indicador fixo) |
 | Empresas | `/companies` | CRUD empresas + critérios IA |
 | Nova Empresa | `/companies/new` | Formulário criação empresa |
 | Editar Empresa | `/companies/:id/edit` | Editar empresa e critérios |
@@ -431,7 +429,7 @@ bundle exec rails db:seed
 Cria:
 - 3 empresas: Contábil Norte, Tech Solutions LTDA, Empresa Demo
 - 11 leads com diferentes perfis (qualificado, não qualificado, pendente, demo)
-- 10 qualificações já processadas com scores variados
+- 9 qualificações já processadas com scores variados
 - 4 conjuntos de campos (2 na Contábil Norte, 1 na Tech Solutions, 1 na Empresa Demo)
 - Feature flags ativas para Contábil Norte e Tech Solutions
 

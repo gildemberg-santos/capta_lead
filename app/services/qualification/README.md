@@ -30,7 +30,10 @@ Os serviços de qualificação são o núcleo do CaptaLead. Eles orquestram o fl
 ## 🔄 Fluxo de Execução
 
 ```
-Lead criado
+Lead salvo
+    │
+    ▼
+Usuário aciona "Qualificar" (POST /leads/:id/qualify)
     │
     ▼
 Enqueuer.call(lead) ──────────────────────┐

@@ -33,3 +33,10 @@
 
 # Ignore master key for decrypting credentials and more.
 /config/master.key
+
+# Conteúdo editorial local (artigos de LinkedIn não versionados).
+/content/artigos/
+
+# A documentação do projeto é versionada (o ignore global usa docs/*).
+!/docs/
+!/docs/**

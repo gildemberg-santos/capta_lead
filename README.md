@@ -25,14 +25,11 @@ capta_lead/
 │   │   ├── application_controller.rb
 │   │   ├── companies_controller.rb      # CRUD empresas + critérios IA
 │   │   ├── field_sets_controller.rb     # CRUD conjuntos de campos (nested em empresa)
-│   │   ├── dashboard_controller.rb      # métricas, calibração, status Ollama
+│   │   ├── dashboard_controller.rb      # métricas, calibração e contadores
 │   │   ├── lead_qualifications_controller.rb  # listagem e detalhe qualificações
 │   │   └── leads_controller.rb          # CRUD leads + formulário dinâmico + qualificar
 │   ├── helpers/
 │   │   └── application_helper.rb        # lead_answer, criteria_value, preview_criteria
-│   ├── javascript/
-│   │   └── controllers/
-│   │       └── lead_form_controller.js  # campos dinâmicos, modo Visual/JSON
 │   ├── models/
 │   │   ├── application_record.rb
 │   │   ├── company.rb                   # Flipper::Identifier, DEFAULT_CRITERIA (BANT), validação JSON
@@ -56,16 +53,15 @@ capta_lead/
 │   │   ├── lead_qualifications/         # index, show
 │   │   └── layouts/
 │   │       └── application.html.erb     # layout com navbar, hero, footer
-│   └── sidekiq/
-│       └── qualify_lead_job.rb          # fila low, retry 3, sidekiq_retries_exhausted
-├── assets/
-│   └── stylesheets/
-│       └── capta_lead.css               # design system profissional (cores, cards, badges)
+│   ├── sidekiq/
+│   │   └── qualify_lead_job.rb          # fila low, retry 3, sidekiq_retries_exhausted
+│   └── assets/
+│       └── stylesheets/
+│           └── capta_lead.css           # design system profissional (cores, cards, badges)
 ├── db/migrate/
 │   ├── 20261110000000_create_companies.rb
 │   ├── 20261110000001_create_leads.rb
 │   ├── 20261110000002_create_lead_qualifications.rb
-│   ├── 20261110000003_add_qualification_criteria_to_companies.rb
 │   ├── 20261110143334_create_flipper_tables.rb
 │   └── 20261110190000_create_field_sets.rb
 ├── spec/
@@ -234,7 +230,7 @@ A criação e edição de empresas inclui um formulário profissional para geren
 - **Instruções para o modelo**: Orientações gerais enviadas ao Tev1
 - **Critério QUALIFICADO**: Condições para lead ser considerado qualificado (TRUE)
 - **Critério NÃO QUALIFICADO**: Condições para lead ser considerado não qualificado (FALSE)
-- **Limiar de aprovação**: Nota mínima (0-1) para classificar como qualificado, com slider visual
+- **Limiar de aprovação**: informado na tela em escala 0–10 (convertido para 0–1 antes de salvar), com barra de progresso
 - **Preview JSON**: Visualização em tempo real do JSON enviado ao modelo
 - **Botão Restaurar Padrão**: Volta para os critérios BANT padrão
 
@@ -255,8 +251,8 @@ A criação e edição de leads usa um formulário dinâmico que permite:
 
 - **Adicionar/remover campos** quantos forem necessários
 - **Tipos pré-definidos**: texto, seleção, telefone, WhatsApp, e-mail, CPF, CNPJ, endereço, texto longo, senha
-- **Modo Visual** (padrão) e **Modo JSON** para edição direta
-- **Sanitização automática LGPD**: campos com tipos `phone`, `email`, `whatsapp`, `cpf`, `cnpj`, `address` ou `password` são automaticamente mascarados antes de enviar ao modelo IA
+- **Modo Visual** para montar os campos; o modo JSON existe apenas no formulário de conjuntos de campos
+- **Sanitização automática LGPD**: campos com tipos `name`, `phone`, `email`, `whatsapp`, `cpf`, `cnpj`, `address` ou `password` são automaticamente mascarados antes de enviar ao modelo IA
 
 Exemplo de JSON gerado:
 
@@ -296,7 +292,7 @@ Após iniciar o servidor (`bundle exec rails server`), acesse **http://localhost
 
 | Página | URL | Função |
 |--------|-----|--------|
-| **Dashboard** | `/dashboard` | Visão geral: cards de estatísticas, barras de progresso, métricas de desempenho, calibração, status do Ollama |
+| **Dashboard** | `/dashboard` | Visão geral: cards de estatísticas, barras de progresso, métricas de desempenho e calibração (o status do modelo é um indicador fixo, sem health check) |
 | **Empresas** | `/companies` | CRUD completo: criar, editar, excluir empresas e gerenciar critérios de qualificação IA |
 | **Nova Empresa** | `/companies/new` | Formulário com nome, modo demo e critérios (instruções, qualificado, não qualificado, limiar) |
 | **Editar Empresa** | `/companies/:id/edit` | Editar empresa e critérios de qualificação |

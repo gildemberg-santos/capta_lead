@@ -6,7 +6,7 @@ Guia de convenções e práticas de teste no projeto CaptaLead.
 
 ## 📊 Visão Geral
 
-- **Framework:** RSpec 7.1
+- **Framework:** RSpec (rspec-rails 7.x)
 - **Simulação de HTTP:** WebMock (não chama o Ollama real nos testes)
 - **Fixtures:** FactoryBot
 - **Banco de dados:** PostgreSQL com transações (rollback após cada teste)
@@ -122,8 +122,8 @@ expect(lead.reload.lead_qualification)
 - [x] Erro 5xx → TransientError
 - [x] Probabilidade fora de 0-1 → InvalidResponse
 - [x] `noul` ausente → InvalidResponse
-- [ ] Erro 4xx → InvalidResponse (adicionar)
-- [ ] Resposta JSON malformada → InvalidResponse (adicionar)
+- [ ] Erro 4xx → InvalidResponse (comportamento implementado, teste faltando)
+- [ ] Resposta JSON malformada → InvalidResponse (comportamento implementado, teste faltando)
 
 ### Interpreter
 - [x] Nota acima do limiar → qualified
